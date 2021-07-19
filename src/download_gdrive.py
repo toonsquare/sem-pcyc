@@ -40,8 +40,12 @@ def download_file_from_google_drive(id, destination):
 
     if token:
         params = { 'id' : id, 'confirm' : token }
+        print(URL)
         response = session.get(URL, params = params, stream = True)
+    else:
+        print(token)
 
+    print(URL)
     save_response_content(response, destination)    
 
 
@@ -52,6 +56,8 @@ if __name__ == "__main__":
     else:
         # TAKE ID FROM SHAREABLE LINK
         file_id = sys.argv[1]
+        print(file_id)
         # DESTINATION FILE ON YOUR DISK
         destination = sys.argv[2]
+        print(destination)
         download_file_from_google_drive(file_id, destination)
