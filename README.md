@@ -38,7 +38,10 @@ conda activate 가상환경이름(ex.torch)
 ```bash
 pip install --upgrade google-api-python-client
 ```
-
+- pytorch 설치 
+```bash 
+conda install pytorch torchvision cudatoolkit=9.2 -c pytorch
+```
 ## Getting Started
 
 ### Installation
