@@ -22,6 +22,10 @@ sudo apt-get install p7zip-full
 ```bash
 sudo apt-get install -y rename
 ```
+* 
+```bash
+conda install _pytorch_select 
+```
 
 ## 가상환경 생성
 ```bash
