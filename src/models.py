@@ -16,6 +16,8 @@ import torch.nn.functional as F
 import utils
 from losses import GANLoss
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
 
 class VGGNetFeats(nn.Module):
     def __init__(self, pretrained=True, finetune=True):
@@ -363,6 +365,8 @@ class SEM_PCYC(nn.Module):
         se = torch.from_numpy(se)
         if torch.cuda.is_available:
             se = se.cuda()
+        if torch.cuda.device_count() > 1 : 
+            se = nn.DataParallel(se).to(device)
 
         # Forward pass
         self.forward(sk, im, se)

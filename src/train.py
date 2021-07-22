@@ -25,9 +25,9 @@ from data import DataGeneratorPaired, DataGeneratorSketch, DataGeneratorImage
 
 np.random.seed(0)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main():
-
     # Parse options
     args = Options().parse()
     print('Parameters:\t' + str(args))
@@ -212,6 +212,9 @@ def main():
     if args.ngpu > 0 & torch.cuda.is_available():
         print('*Cuda exists*...', end='')
         sem_pcyc_model = sem_pcyc_model.cuda()
+    if args.ngpu > 1 & torch.cuda.is_available():
+        sem_pcyc_model = nn.DataParallel(sem_pcyc_model).to(device)
+        
     print('Done')
 
     best_map = 0
@@ -294,7 +297,6 @@ def main():
 
 
 def train(train_loader, sem_pcyc_model, epoch, args):
-
     # Switch to train mode
     sem_pcyc_model.train()
 
@@ -318,6 +320,10 @@ def train(train_loader, sem_pcyc_model, epoch, args):
         # Transfer sk and im to cuda
         if torch.cuda.is_available():
             sk, im = sk.cuda(), im.cuda()
+        
+        if args.ngpu > 1 & torch.cuda.is_available():
+            sk = nn.DataParallel(sk).to(device)
+            im = nn.DataParallel(im).to(device)
 
         # Optimize parameters
         loss = sem_pcyc_model.optimize_params(sk, im, cl)

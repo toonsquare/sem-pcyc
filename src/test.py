@@ -10,6 +10,7 @@ from scipy.spatial.distance import cdist
 
 # pytorch, torch vision
 import torch
+import torch.nn as nn
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
@@ -24,6 +25,7 @@ from data import DataGeneratorSketch, DataGeneratorImage
 
 np.random.seed(0)
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main():
 
@@ -184,6 +186,9 @@ def main():
     if args.ngpu > 0 & torch.cuda.is_available():
         print('*Cuda exists*...', end='')
         sem_pcyc_model = sem_pcyc_model.cuda()
+    if args.ngpu > 1 & torch.cuda.is_available():
+        sem_pcyc_model = nn.DataParallel(sem_pcyc_model).to(device)
+        
     print('Done')
 
     # load the best model yet
@@ -230,6 +235,8 @@ def validate(valid_loader_sketch, valid_loader_image, sem_pcyc_model, epoch, arg
 
         if torch.cuda.is_available():
             sk = sk.cuda()
+        if args.ngpu > 1 & torch.cuda.is_available():
+            sk = nn.DataParallel(sk).to(device)
 
         # Sketch embedding into a semantic space
         sk_em = sem_pcyc_model.get_sketch_embeddings(sk)
@@ -256,6 +263,8 @@ def validate(valid_loader_sketch, valid_loader_image, sem_pcyc_model, epoch, arg
 
         if torch.cuda.is_available():
             im = im.cuda()
+        if args.ngpu > 1 & torch.cuda.is_available():
+            im = nn.DataParallel(im).to(device)
 
         # Image embedding into a semantic space
         im_em = sem_pcyc_model.get_image_embeddings(im)
