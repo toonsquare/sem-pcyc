@@ -25,9 +25,11 @@ from data import DataGeneratorPaired, DataGeneratorSketch, DataGeneratorImage
 
 np.random.seed(0)
 
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu") ## specify the GPU id's, GPU id's start from 0.
 
 def main():
+
     # Parse options
     args = Options().parse()
     print('Parameters:\t' + str(args))
@@ -198,6 +200,7 @@ def main():
 
     # Model
     sem_pcyc_model = SEM_PCYC(params_model)
+    sem_pcyc_model = nn.DataParallel(sem_pcyc_model).to(device)
 
     cudnn.benchmark = True
 
@@ -209,13 +212,10 @@ def main():
     # Check cuda
     print('Checking cuda...', end='')
     # Check if CUDA is enabled
-    if args.ngpu > 0 & torch.cuda.is_available():
-        print('*Cuda exists*...', end='')
-        sem_pcyc_model = sem_pcyc_model.cuda()
-    if args.ngpu > 1 & torch.cuda.is_available():
-        sem_pcyc_model = nn.DataParallel(sem_pcyc_model).to(device)
-        
-    print('Done')
+    # if args.ngpu > 0 & torch.cuda.is_available():
+    #     print('*Cuda exists*...', end='')
+    #     sem_pcyc_model = sem_pcyc_model.cuda()
+    # print('Done')
 
     best_map = 0
     early_stop_counter = 0
@@ -225,9 +225,9 @@ def main():
         print('***Train***')
         for epoch in range(args.epochs):
 
-            sem_pcyc_model.scheduler_gen.step()
-            sem_pcyc_model.scheduler_disc.step()
-            sem_pcyc_model.scheduler_ae.step()
+            sem_pcyc_model.module.scheduler_gen.step()
+            sem_pcyc_model.module.scheduler_disc.step()
+            sem_pcyc_model.module.scheduler_ae.step()
 
             # train on training set
             losses = train(train_loader, sem_pcyc_model, epoch, args)
@@ -297,6 +297,7 @@ def main():
 
 
 def train(train_loader, sem_pcyc_model, epoch, args):
+
     # Switch to train mode
     sem_pcyc_model.train()
 
@@ -320,13 +321,9 @@ def train(train_loader, sem_pcyc_model, epoch, args):
         # Transfer sk and im to cuda
         if torch.cuda.is_available():
             sk, im = sk.cuda(), im.cuda()
-        
-        if args.ngpu > 1 & torch.cuda.is_available():
-            sk = nn.DataParallel(sk).to(device)
-            im = nn.DataParallel(im).to(device)
 
         # Optimize parameters
-        loss = sem_pcyc_model.optimize_params(sk, im, cl)
+        loss = sem_pcyc_model.module.optimize_params(sk, im, cl)
 
         # Store losses for visualization
         losses_aut_enc.update(loss['aut_enc'].item(), sk.size(0))

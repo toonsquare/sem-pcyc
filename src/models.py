@@ -15,8 +15,7 @@ import torch.nn.functional as F
 # user defined
 import utils
 from losses import GANLoss
-
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+# import horovod.torch as hvd
 
 
 class VGGNetFeats(nn.Module):
@@ -137,7 +136,7 @@ class AutoEncoder(nn.Module):
 class SEM_PCYC(nn.Module):
     def __init__(self, params_model):
         super(SEM_PCYC, self).__init__()
-
+        # self.ngpu = ngpu
         print('Initializing model variables...', end='')
         # Dimension of embedding
         self.dim_out = params_model['dim_out']
@@ -159,6 +158,7 @@ class SEM_PCYC(nn.Module):
         print('Done')
 
         print('Initializing trainable models...', end='')
+        
         # Generators
         # Sketch to semantic generator
         self.gen_sk2se = Generator(in_dim=512, out_dim=self.dim_out, noise=False, use_dropout=True)
@@ -177,6 +177,7 @@ class SEM_PCYC(nn.Module):
         self.disc_im = Discriminator(in_dim=512, noise=True, use_batchnorm=True)
         # Semantic autoencoder
         self.aut_enc = AutoEncoder(dim=self.sem_dim, hid_dim=self.dim_out, nlayer=1)
+        
         # Classifiers
         self.classifier_sk = nn.Linear(512, self.num_clss, bias=False)
         self.classifier_im = nn.Linear(512, self.num_clss, bias=False)
@@ -201,6 +202,7 @@ class SEM_PCYC(nn.Module):
         self.optimizer_disc = optim.SGD(list(self.disc_se.parameters()) + list(self.disc_sk.parameters()) +
                                         list(self.disc_im.parameters()), lr=self.lr, momentum=self.momentum)
         self.optimizer_ae = optim.SGD(self.aut_enc.parameters(), lr=100 * self.lr, momentum=self.momentum)
+        
         self.scheduler_gen = optim.lr_scheduler.MultiStepLR(self.optimizer_gen, milestones=self.milestones,
                                                             gamma=self.gamma)
         self.scheduler_disc = optim.lr_scheduler.MultiStepLR(self.optimizer_disc, milestones=self.milestones,
@@ -365,8 +367,6 @@ class SEM_PCYC(nn.Module):
         se = torch.from_numpy(se)
         if torch.cuda.is_available:
             se = se.cuda()
-        if torch.cuda.device_count() > 1 : 
-            se = nn.DataParallel(se).to(device)
 
         # Forward pass
         self.forward(sk, im, se)

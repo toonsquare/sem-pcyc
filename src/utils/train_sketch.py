@@ -162,8 +162,6 @@ def main():
     if args.ngpu > 0 & torch.cuda.is_available():
         print('*Cuda exists*...', end='')
         model = model.cuda()
-    if args.ngpu > 1 & torch.cuda.is_available():
-        model = nn.DataParallel(model).to(device)
     print('Done')
 
     best_acc = 0
@@ -235,9 +233,6 @@ def train(train_loader, model, criterion, optimizer, epoch, logger=None):
     for i, (im, cl) in enumerate(train_loader):
         if torch.cuda.is_available():
             im, cl = im.cuda(), cl.cuda()
-        if torch.cuda.device_count() > 1:
-            im = nn.DataParallel(im).to(device)
-            cl = nn.DataParallel(cl).to(device)
 
         op = model(im)
         loss = criterion(op, cl)
@@ -273,9 +268,6 @@ def validate(valid_loader, model, criterion, epoch, logger=None):
 
         if torch.cuda.is_available():
             im, cl = im.cuda(), cl.cuda()
-        if torch.cuda.device_count() > 1:
-            im = nn.DataParallel(im).to(device)
-            cl = nn.DataParallel(cl).to(device)
 
         # compute output
         op = model(im)
