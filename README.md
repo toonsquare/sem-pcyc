@@ -148,3 +148,8 @@ year = {2019}
 
 ## Author
 * [Anjan Dutta](https://sites.google.com/site/2adutta/) ([@AnjanDutta](https://github.com/AnjanDutta))
+
+
+### nvidia-smi 설명
+https://kyumdoctor.co.kr/10
+https://kyumdoctor.co.kr/11?category=987376
