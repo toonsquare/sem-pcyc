@@ -123,6 +123,10 @@ example.
 ```bash
 python3 src/test.py --dataset TU-Berlin --dim-out 64 --semantic-models hieremb-path word2vec-google-news --batch-size 64 --save-image-results
 ```
+Multi gpu 중 지정해서 테스트
+```
+CUDA_VISIBLE_DEVICES=0,1 python3 src/test.py --dataset TU-Berlin --dim-out 64 --semantic-models hieremb-path word2vec-google-news --batch-size 64 --save-image-results
+```
 ### Train
 
 ##### TU-Berlin
@@ -134,6 +138,10 @@ python3 src/train.py --dataset TU-Berlin --dim-out 64 --semantic-models word2vec
 example.
 ```bash
 python3 src/train.py --dataset TU-Berlin --dim-out 64 --semantic-models word2vec-google-news --epochs 1000 --early-stop 200 --lr 0.0001 --batch-size 64
+```
+Multi gpu 중 지정해서 학습 시키기
+```
+CUDA_VISIBLE_DEVICES=0,1 python src/train.py --dataset TU-Berlin --dim-out 64 --semantic-models word2vec-google-news --epochs 1000 --early-stop 200 --lr 0.0001 --ngpu 2 --batch-size 64
 ```
 
 ### Citation
