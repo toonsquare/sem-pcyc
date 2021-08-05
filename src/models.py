@@ -143,6 +143,7 @@ class SEM_PCYC(nn.Module):
         self.sem_dim = params_model['sem_dim']
         # Number of classes
         self.num_clss = params_model['num_clss']
+        print('------ num_clss : ' + str(self.num_clss))
         # Sketch model: pre-trained on ImageNet
         self.sketch_model = VGGNetFeats(pretrained=False, finetune=False)
         self.load_weight(self.sketch_model, params_model['path_sketch_model'], 'sketch')
@@ -175,6 +176,7 @@ class SEM_PCYC(nn.Module):
         self.disc_im = Discriminator(in_dim=512, noise=True, use_batchnorm=True)
         # Semantic autoencoder
         self.aut_enc = AutoEncoder(dim=self.sem_dim, hid_dim=self.dim_out, nlayer=1)
+
         # Classifiers
         self.classifier_sk = nn.Linear(512, self.num_clss, bias=False)
         self.classifier_im = nn.Linear(512, self.num_clss, bias=False)

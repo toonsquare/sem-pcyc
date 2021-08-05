@@ -26,7 +26,6 @@ np.random.seed(0)
 
 
 def main():
-
     # Parse options
     args = Options().parse()
     print('Parameters:\t' + str(args))
@@ -56,15 +55,21 @@ def main():
         str_aux = os.path.join(str_aux, 'generalized')
     args.semantic_models = sorted(args.semantic_models)
     model_name = '+'.join(args.semantic_models)
+    print('model_name : ' + model_name)
     root_path = os.path.join(path_dataset, args.dataset)
+    print('root_path : ' + root_path)
     path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
+    print('path_sketch_model : ' + path_sketch_model)
     path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image')
+    print('path_image_model : ' + path_image_model)
     path_cp = os.path.join(path_aux, 'CheckPoints', args.dataset, str_aux, model_name, str(args.dim_out))
+    print('path_cp : ' + path_cp)
     path_results = os.path.join(path_aux, 'Results', args.dataset, str_aux, model_name, str(args.dim_out))
     files_semantic_labels = []
     sem_dim = 0
     for f in args.semantic_models:
         fi = os.path.join(path_aux, 'Semantic', args.dataset, f + '.npy')
+        print('fi : '+ fi)
         files_semantic_labels.append(fi)
         sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
 
@@ -102,9 +107,17 @@ def main():
 
     # Combine the valid and test set into test set
     splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
+    print('----te_fls_sk----')
+    print(splits['te_fls_sk'])
     splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
+    print('----te_clss_sk----')
+    print(splits['te_clss_sk'])
     splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
+    print('----te_fls_im----')
+    print(splits['te_fls_im'])
     splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
+    print('----te_clss_im----')
+    print(splits['te_clss_im'])
 
     if args.gzs_sbir > 0:
         perc = 0.2
@@ -217,7 +230,6 @@ def main():
 
 
 def validate(valid_loader_sketch, valid_loader_image, sem_pcyc_model, epoch, args):
-
     # Switch to test mode
     sem_pcyc_model.eval()
 

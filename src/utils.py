@@ -195,7 +195,7 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
     # image files and classes
-    fls_im = glob.glob(os.path.join(path_im, '*', '*.jpg'))
+    fls_im = glob.glob(os.path.join(path_im, '*', '*'))
     fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
     clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
