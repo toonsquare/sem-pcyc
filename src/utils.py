@@ -137,7 +137,7 @@ def load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=
 
     # all the image and sketch files together with classes and core names
     fls_sk = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_sk, '*/*.png'))])
-    fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.jpg'))])
+    fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
 
     # classes for image and sketch
     clss_sk = np.array([f.split('/')[0] for f in fls_sk])
