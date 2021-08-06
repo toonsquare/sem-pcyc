@@ -4,6 +4,7 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="CUDA_VISIBLE_DEVICES" value="1 PYTHONUNBUFFERED=1" />
     </envs>
     <option name="SDK_HOME" value="" />
