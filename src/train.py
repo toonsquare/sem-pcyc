@@ -7,7 +7,7 @@ import time
 import numpy as np
 
 # pytorch, torch vision
-import torch
+import torch, gc
 import torch.optim as optim
 import torch.nn as nn
 import torch.backends.cudnn as cudnn
@@ -25,9 +25,9 @@ from data import DataGeneratorPaired, DataGeneratorSketch, DataGeneratorImage
 
 np.random.seed(0)
 
-
 def main():
-
+    gc.collect()
+    torch.cuda.empty_cache()
     # Parse options
     args = Options().parse()
     print('Parameters:\t' + str(args))
