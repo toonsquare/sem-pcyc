@@ -36,8 +36,13 @@ conda install _pytorch_select
 ```bash
 conda create --name 가상환경이름(ex.torch)
 conda activate 가상환경이름(ex.torch)
+conda install pytorch==1.4.0 torchvision==0.5.0 cudatoolkit=10.1 -c pytorch
 ```
-
+```
+ conda list | grep torch
+pytorch                   1.4.0           py3.6_cuda10.1.243_cudnn7.6.3_0    pytorch
+torchvision               0.2.2.post3              pypi_0    pypi
+```
 * 필요 패키지 설치
 
 - torch
@@ -216,6 +221,12 @@ path_cp
 /etc/hosts 에 아래 와 같이 추가
 ```
 49.50.175.252 nipa
+```
+
+## Production
+### pytorch serving article
+```
+https://towardsdatascience.com/how-to-deploy-your-pytorch-models-with-torchserve-2452163871d3
 ```
 
 ## Author
