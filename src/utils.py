@@ -137,7 +137,10 @@ def load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=
 
     # all the image and sketch files together with classes and core names
     fls_sk = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_sk, '*/*.png'))])
-    fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
+    # fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
+    fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.base64'))])
+    print('load_files_sketchy_zeroshot-----------fls_im.size--------------')
+    print(len(fls_im))
 
     # classes for image and sketch
     clss_sk = np.array([f.split('/')[0] for f in fls_sk])
@@ -195,7 +198,10 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
     # image files and classes
-    fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+    # fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+    fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+    print('load_files_tuberlin_zeroshot-----------fls_im.size----------')
+    print(len(fls_im))
     fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
     clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
