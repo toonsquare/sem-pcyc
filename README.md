@@ -32,7 +32,7 @@ conda install _pytorch_select
 ```
 
 ## 가상환경 생성
-
+- 참고 https://varhowto.com/install-pytorch-1-4-0/
 ```bash
 conda create --name 가상환경이름(ex.torch)
 conda activate 가상환경이름(ex.torch)
@@ -49,7 +49,7 @@ torchvision               0.2.2.post3              pypi_0    pypi
 - torchvision
 - numpy
 - scikit-learn
-- google
+- google ( 데이터를 온라인 다운로드 받을 경우 사용, 로컬에 저장해서 사용할때는 필요 없음 )
 - tqdm
 
 ```bash
