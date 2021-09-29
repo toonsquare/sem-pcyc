@@ -2,25 +2,36 @@
 
 [PyTorch](https://pytorch.org/) | [Arxiv](https://arxiv.org/abs/1903.03372)
 
+
 PyTorch implementation of our SEM-PCYC model for zero-shot sketch-based image retrieval:  
 [Semantically Tied Paired Cycle Consistency for Zero-Shot Sketch-based Image Retrieval](https://arxiv.org/abs/1903.03372)  
 [Anjan Dutta](https://sites.google.com/site/2adutta/)
 , [Zeynep Akata](https://ivi.fnwi.uva.nl/uvaboschdeltalab/people/zeynep-akata/)  
 [CVPR, 2019](http://cvpr2019.thecvf.com/)
+## 개발환경 정리
+|Train|Test|Ubuntu|  GPU      |  Driver |  Cuda |Conda |Python|Pytorch|torchvision|
+|----|----|------|--------   |---------|-------|------|------|-------|-----------|
+|성공 |성공 |18.04 | 1080 Ti   |470.57.02|11.4   |4.7.12|3.6.13|1.4.0  py3.6_cuda9.2.148_cuddn7.6.3_0|0.5.0| 
+|성공 |성공 |18.04 | 2070 SUPER|470.57.02|11.4   |4.7.12|3.6.13|1.4.0 py3.6_cuda9.2.148_cuddn7.6.3_0|0.5.0|
+|성공 |성공 |20.04 | 1660 SUPER|470.57.02|11.4   |4.7.12|3.6.10|1.7.1 py3.6_cuda9.2.148_cuddn7.6.3_0|0.8.2|
+
 
 ## Prerequisites
 
-* Linux (tested on Ubuntu 16.04)
-* NVIDIA GPU + CUDA CuDNN
-* 7z
-* conda install (ref : https://dambi-ml.tistory.com/6)
-
++ Ubuntu
+  * Ubuntu 18.04 (Tested) 
+  * Ubuntu 20.04 (Tested)
++ NVIDIA GPU 
+  * NVIDIA GeForce GTX 1080 Ti (Tested)
+  * NVIDIA GeForce RTX 2070 SUPER (Tested)
++ CUDA Version
+  * 11.4 (Ubuntu Nvidia 독점 Driver Version: 470.57.02 (Tested))
++ 7z 
++ conda install (ref : https://dambi-ml.tistory.com/6)
 ```bash
 sudo apt-get install p7zip-full
 ```
-
 * rename package 설치
-
 ```bash
 sudo apt-get install -y rename
 ```
@@ -63,6 +74,7 @@ conda uninstall pytorch torchvision cudatoolkit=11.0 -c pytorch
 conda install pytorch torchvision cudatoolkit=9.2 -c pytorch
 ```
 
+
 ## Getting Started
 
 ### Installation
@@ -74,19 +86,15 @@ git clone https://github.com/AnjanDutta/sem-pcyc.git
 cd sem-pcyc
 
 ```
-
 * Update [config.ini](https://github.com/AnjanDutta/sem-pcyc/blob/master/config.ini) (see example)
-
 ```bash
 [<host>]
 path_dataset = <where all the datasets will be downloaded>
 path_aux = <where all the auxiliary folders and files will be saved>
 ```
-
 ### Download datasets
 
 * TU-Berlin
-
 ```bash
 #download_datasets.sh
 Sketcy dataset 부분은 주석처리
@@ -95,16 +103,12 @@ Sketcy dataset 부분은 주석처리
 ```bash
 bash download_datasets.sh
 ```
-
 OR
-
 ```bash
 # code 실행 불가 경우
 나스 toonsquare/개발관련/deeptoon/sem-pcyc/data/newnew 에 TU-Berlin.zip 가져오기 
 ```
-
 ### Download pretrained models
-
 * Sketchy
     * sketch
     * image
@@ -113,13 +117,10 @@ OR
     * sketch
     * image
     * hieremb-path + word2vec-google-news
-
 ```bash
 bash download_models.sh
 ```
-
 OR
-
 ```bash
 # code 실행 불가 경우
 나스 toonsquare/개발관련/deeptoon/sem-pcyc/pretrained-model에서 가져오기 
@@ -173,6 +174,8 @@ python3 src/train.py --dataset TU-Berlin --dim-out 64 --semantic-models word2vec
 ```
 
 - train 시 CUDA memory에 따라 batch size 변경 필요
+- CUDA_VISIBLE_DEVICES=1 뜻은 GPU 0 번(1080 Super), 1 번(2080TI) 사용시 1번 사용고 싶을 때 사
+![test image](./figures/multi_gpu.png)
 
 example.
 
@@ -227,6 +230,10 @@ path_cp
 ### pytorch serving article
 ```
 https://towardsdatascience.com/how-to-deploy-your-pytorch-models-with-torchserve-2452163871d3
+```
+Docker 로 torchserver 실행방법
+```
+docker run --rm -it --gpus all -p 8080:8080 -p 8081:8081 --name mar -v $(pwd)/model-store:/home/model-server/model-store -v $(pwd)/examples:/home/model-server/examples  pytorch/torchserve:latest torchserve --start --model-store /home/model-server/model-store --models densenet161=densenet161.mar
 ```
 
 ## Author
