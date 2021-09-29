@@ -102,6 +102,13 @@ def main():
         sketch_sd = ''
         splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, sketch_dir=sketch_dir,
                                                     photo_sd=photo_sd, sketch_sd=sketch_sd)
+    elif args.dataset == 'intersection':
+        photo_dir = 'images'
+        sketch_dir = 'sketches'
+        photo_sd = ''
+        sketch_sd = ''
+        splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                    photo_sd=photo_sd, sketch_sd=sketch_sd)
     else:
         raise Exception('Wrong dataset.')
 
