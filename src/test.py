@@ -9,7 +9,7 @@ from sklearn.neighbors import KDTree
 from scipy.spatial.distance import cdist
 
 # pytorch, torch vision
-import torch
+import torch, gc
 import torch.backends.cudnn as cudnn
 from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
@@ -26,6 +26,9 @@ np.random.seed(0)
 
 
 def main():
+    gc.collect()
+    torch.cuda.empty_cache()
+
     # Parse options
     args = Options().parse()
     print('Parameters:\t' + str(args))
@@ -56,17 +59,23 @@ def main():
     args.semantic_models = sorted(args.semantic_models)
     model_name = '+'.join(args.semantic_models)
     print('model_name : ' + model_name)
+    # 데이터 셋 경로
     root_path = os.path.join(path_dataset, args.dataset)
     print('root_path : ' + root_path)
+    # 스케치 모델 경로
     path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
     print('path_sketch_model : ' + path_sketch_model)
+    # 썸네일 모델 경로
     path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image')
     print('path_image_model : ' + path_image_model)
+    # 체크포인트 모델 경로 이건뭐지?
     path_cp = os.path.join(path_aux, 'CheckPoints', args.dataset, str_aux, model_name, str(args.dim_out))
     print('path_cp : ' + path_cp)
+    # 결과 저장 경로
     path_results = os.path.join(path_aux, 'Results', args.dataset, str_aux, model_name, str(args.dim_out))
     files_semantic_labels = []
     sem_dim = 0
+    # 시멘틱 모델 벡터 값 가져오기
     for f in args.semantic_models:
         fi = os.path.join(path_aux, 'Semantic', args.dataset, f + '.npy')
         print('fi : '+ fi)

@@ -228,7 +228,8 @@ path_cp
 
 ## Production
 ### pytorch serving article
-https://towardsdatascience.com/how-to-deploy-your-pytorch-models-with-torchserve-2452163871d3
+- https://pytorch.org/serve/index.html
+- https://towardsdatascience.com/how-to-deploy-your-pytorch-models-with-torchserve-2452163871d3
 
 
 Docker 로 torchserver 실행방법

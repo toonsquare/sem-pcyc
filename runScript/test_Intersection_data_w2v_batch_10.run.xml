@@ -1,5 +1,5 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="test_Intersection_data_w2v_batch_10" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="test_Intersection_data_w2v_batch_64" type="PythonConfigurationType" factoryName="Python">
     <module name="sem-pcyc" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
@@ -13,7 +13,7 @@
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/test.py" />
-    <option name="PARAMETERS" value="--dataset intersection --dim-out 64 --semantic-models word2vec-google-news --batch-size 10 --save-image-results" />
+    <option name="PARAMETERS" value="--dataset intersection --dim-out 64 --semantic-models word2vec-google-news --batch-size 32 --save-image-results --save-best-results" />
     <option name="SHOW_COMMAND_LINE" value="true" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />

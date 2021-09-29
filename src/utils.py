@@ -130,15 +130,18 @@ def get_coarse_grained_samples(classes, fls_im, fls_sk, set_type='train', filter
 
 
 def load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=False, photo_dir='photo',
-                                sketch_dir='sketch', photo_sd='tx_000000000000', sketch_sd='tx_000000000000'):
+                                sketch_dir='sketch', photo_sd='tx_000000000000', sketch_sd='tx_000000000000',
+                                dataset=''):
     # paths of sketch and image
     path_im = os.path.join(root_path, photo_dir, photo_sd)
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
     # all the image and sketch files together with classes and core names
     fls_sk = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_sk, '*/*.png'))])
-    # fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
-    fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.base64'))])
+    if dataset == '':
+        fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
+    else:
+        fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.base64'))])
     print('load_files_sketchy_zeroshot-----------fls_im.size--------------')
     print(len(fls_im))
 
@@ -192,14 +195,17 @@ def load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=
     return splits
 
 
-def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd=''):
+def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd='',
+                                 dataset=''):
 
     path_im = os.path.join(root_path, photo_dir, photo_sd)
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
     # image files and classes
-    # fls_im = glob.glob(os.path.join(path_im, '*', '*'))
-    fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+    if dataset == '':
+        fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+    else:
+        fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
     print('load_files_tuberlin_zeroshot-----------fls_im.size----------')
     print(len(fls_im))
     fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
