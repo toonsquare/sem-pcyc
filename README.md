@@ -228,9 +228,9 @@ path_cp
 
 ## Production
 ### pytorch serving article
-```
 https://towardsdatascience.com/how-to-deploy-your-pytorch-models-with-torchserve-2452163871d3
-```
+
+
 Docker 로 torchserver 실행방법
 ```
 docker run --rm -it --gpus all -p 8080:8080 -p 8081:8081 --name mar -v $(pwd)/model-store:/home/model-server/model-store -v $(pwd)/examples:/home/model-server/examples  pytorch/torchserve:latest torchserve --start --model-store /home/model-server/model-store --models densenet161=densenet161.mar
