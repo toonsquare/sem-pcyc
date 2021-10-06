@@ -82,6 +82,7 @@ def main():
         files_semantic_labels.append(fi)
         sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
 
+    print('sem_dim : ' + str(sem_dim))
     print('Checkpoint path: {}'.format(path_cp))
     print('Result path: {}'.format(path_results))
 

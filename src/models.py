@@ -155,6 +155,8 @@ class SEM_PCYC(nn.Module):
         for f in params_model['files_semantic_labels']:
             self.sem.append(np.load(f, allow_pickle=True).item())
         self.dict_clss = params_model['dict_clss']
+        print('--------------self.dem----------------')
+        print(self.sem)
         print('Done')
 
         print('Initializing trainable models...', end='')

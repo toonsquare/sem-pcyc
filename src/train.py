@@ -261,6 +261,9 @@ def main():
                 early_stop_counter = 0
                 utils.save_checkpoint({'epoch': epoch + 1, 'state_dict': sem_pcyc_model.state_dict(), 'best_map':
                     best_map}, directory=path_cp)
+                # utils.save_checkpoint({'epoch': epoch + 1, 'state_dict': sem_pcyc_model, 'best_map':
+                #     best_map, 'test':'tooning'}, directory=path_cp)
+                # utils.save_checkpoint(sem_pcyc_model, directory=path_cp)
             else:
                 if args.early_stop == early_stop_counter:
                     break
