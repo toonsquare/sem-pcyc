@@ -5,8 +5,14 @@
 """
 ModelHandler defines a custom model handler.
 """
+import inspect
+import torch
+import os
+import importlib.util
+import logging
 
 from ts.torch_handler.base_handler import BaseHandler
+logger = logging.getLogger(__name__)
 
 class ModelHandler(BaseHandler):
     """
@@ -26,9 +32,87 @@ class ModelHandler(BaseHandler):
         :return:
         """
         self._context = context
-        print(self._context)
-        self.initialized = True
+        #  load the model
+        self.manifest = context.manifest
+        properties = context.system_properties
+
+        self.map_location = "cuda" if torch.cuda.is_available() and properties.get("gpu_id") is not None else "cpu"
+        self.device = torch.device(
+            self.map_location + ":" + str(properties.get("gpu_id"))
+            if torch.cuda.is_available() and properties.get("gpu_id") is not None
+            else self.map_location
+        )
+
+        model_dir = properties.get("model_dir")
+
+
+        # Read model serialize/pt file
+        serialized_file = self.manifest['model']['serializedFile']
+        model_pt_path = os.path.join(model_dir, serialized_file)
+
+        if not os.path.isfile(model_pt_path):
+            raise RuntimeError("Missing the model.pt file")
+
+            # model def file
+        model_file = self.manifest["model"].get("modelFile", "")
+
+        if model_file:
+            logger.debug("Loading eager model")
+            self.model = self._load_pickled_model(model_dir, model_file, model_pt_path)
+        else:
+            logger.debug("Loading torchscript model")
+            self.model = self._load_torchscript_model(model_pt_path)
+
+        self.model.to(self.device)
+        self.model.eval()
+        logger.debug("Model file %s loaded successfully", model_pt_path)
+
         #  load the model, refer 'custom handler class' above for details
+
+    def _load_pickled_model(self, model_dir, model_file, model_pt_path):
+        model_def_path = os.path.join(model_dir, model_file)
+        if not os.path.isfile(model_def_path):
+            raise RuntimeError("Missing the model.py file")
+
+        module = importlib.import_module(model_file.split(".")[0])
+        model_class_definitions = list_classes_from_module(module)
+        if len(model_class_definitions) != 1:
+            raise ValueError(
+                "Expected only one class as model definition. {}".format(
+                    model_class_definitions
+                )
+            )
+
+        model_class = model_class_definitions[0]
+        state_dict = torch.load(model_pt_path)
+        model = model_class()
+        model.load_state_dict(state_dict)
+        return model
+
+    def list_classes_from_module(module, parent_class=None):
+        """
+        Parse user defined module to get all model service classes in it.
+
+        :param module:
+        :param parent_class:
+        :return: List of model service class definitions
+        """
+
+        # Parsing the module to get all defined classes
+        classes = [
+            cls[1]
+            for cls in inspect.getmembers(
+                module,
+                lambda member: inspect.isclass(member)
+                               and member.__module__ == module.__name__,
+            )
+        ]
+        # filter classes that is subclass of parent_class
+        if parent_class is not None:
+            return [c for c in classes if issubclass(c, parent_class)]
+
+        return classes
+
 
     def preprocess(self, data):
         """
