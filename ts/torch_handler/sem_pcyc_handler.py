@@ -69,27 +69,7 @@ class ModelHandler(BaseHandler):
 
         #  load the model, refer 'custom handler class' above for details
 
-    def _load_pickled_model(self, model_dir, model_file, model_pt_path):
-        model_def_path = os.path.join(model_dir, model_file)
-        if not os.path.isfile(model_def_path):
-            raise RuntimeError("Missing the model.py file")
-
-        module = importlib.import_module(model_file.split(".")[0])
-        model_class_definitions = list_classes_from_module(module)
-        if len(model_class_definitions) != 1:
-            raise ValueError(
-                "Expected only one class as model definition. {}".format(
-                    model_class_definitions
-                )
-            )
-
-        model_class = model_class_definitions[0]
-        state_dict = torch.load(model_pt_path)
-        model = model_class()
-        model.load_state_dict(state_dict)
-        return model
-
-    def list_classes_from_module(module, parent_class=None):
+    def _list_classes_from_module(self, module, parent_class=None):
         """
         Parse user defined module to get all model service classes in it.
 
@@ -112,6 +92,36 @@ class ModelHandler(BaseHandler):
             return [c for c in classes if issubclass(c, parent_class)]
 
         return classes
+
+    def _load_pickled_model(self, model_dir, model_file, model_pt_path):
+        model_def_path = os.path.join(model_dir, model_file)
+        if not os.path.isfile(model_def_path):
+            raise RuntimeError("Missing the model.py file")
+
+        module = importlib.import_module(model_file.split(".")[0])
+        classes = [
+            cls[1]
+            for cls in inspect.getmembers(
+                module,
+                lambda member: inspect.isclass(member)
+                               and member.__module__ == module.__name__,
+            )
+        ]
+        model_class_definitions = classes
+        if len(model_class_definitions) != 1:
+            raise ValueError(
+                "Expected only one class as model definition. {}".format(
+                    model_class_definitions
+                )
+            )
+
+        model_class = model_class_definitions[0]
+        state_dict = torch.load(model_pt_path)
+        model = model_class()
+        model.load_state_dict(state_dict)
+        return model
+
+
 
 
     def preprocess(self, data):

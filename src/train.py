@@ -213,6 +213,8 @@ def main():
     # Class dictionary
     params_model['dict_clss'] = dict_clss
 
+    print('-------------------model------------------------')
+    print(params_model)
     # Model
     sem_pcyc_model = SEM_PCYC(params_model)
 

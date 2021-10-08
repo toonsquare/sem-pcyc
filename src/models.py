@@ -13,8 +13,11 @@ from torchvision import models
 import torch.nn.functional as F
 
 # user defined
-import utils
 from losses import GANLoss
+
+def numeric_classes(tags_classes, dict_tags):
+    num_classes = np.array([dict_tags.get(t) for t in tags_classes])
+    return num_classes
 
 
 class VGGNetFeats(nn.Module):
@@ -355,7 +358,7 @@ class SEM_PCYC(nn.Module):
     def optimize_params(self, sk, im, cl):
 
         # Get numeric classes
-        num_cls = torch.from_numpy(utils.numeric_classes(cl, self.dict_clss)).cuda()
+        num_cls = torch.from_numpy(numeric_classes(cl, self.dict_clss)).cuda()
         
         # Get the semantic embeddings for cl
         se = np.zeros((len(cl), self.sem_dim), dtype=np.float32)
