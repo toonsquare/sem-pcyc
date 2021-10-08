@@ -108,14 +108,16 @@ class ModelHandler(BaseHandler):
             )
         ]
         model_class_definitions = classes
-        if len(model_class_definitions) != 1:
-            raise ValueError(
-                "Expected only one class as model definition. {}".format(
-                    model_class_definitions
-                )
-            )
+        class_size = len(model_class_definitions)
+        # if len(model_class_definitions) != 1:
+        #     raise ValueError(
+        #         "Expected only one class as model definition. {}".format(
+        #             model_class_definitions
+        #         )
+        #     )
 
-        model_class = model_class_definitions[0]
+        model_class = model_class_definitions[class_size-2]
+        logger.debug("class : {}".format(model_class))
         state_dict = torch.load(model_pt_path)
         model = model_class()
         model.load_state_dict(state_dict)
