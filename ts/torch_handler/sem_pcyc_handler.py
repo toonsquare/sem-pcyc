@@ -9,7 +9,12 @@ import inspect
 import torch
 import os
 import importlib.util
+import glob
 import logging
+import numpy as np
+import itertools
+import torchvision.transforms as transforms
+import random
 
 from ts.torch_handler.base_handler import BaseHandler
 logger = logging.getLogger(__name__)
@@ -24,6 +29,7 @@ class ModelHandler(BaseHandler):
         self.initialized = False
         self.explain = False
         self.target = 0
+
 
     def initialize(self, context):
         """
@@ -93,8 +99,74 @@ class ModelHandler(BaseHandler):
 
         return classes
 
+    def _load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=False, photo_dir='photo',
+                                    sketch_dir='sketch', photo_sd='tx_000000000000', sketch_sd='tx_000000000000',
+                                    dataset=''):
+        # paths of sketch and image
+        path_im = os.path.join(root_path, photo_dir, photo_sd)
+        path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
+
+        # all the image and sketch files together with classes and core names
+        fls_sk = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_sk, '*/*.png'))])
+        if dataset == '':
+            fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
+        else:
+            fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.base64'))])
+        print('load_files_sketchy_zeroshot-----------fls_im.size--------------')
+        print(len(fls_im))
+
+        # classes for image and sketch
+        clss_sk = np.array([f.split('/')[0] for f in fls_sk])
+        clss_im = np.array([f.split('/')[0] for f in fls_im])
+
+        # all the unique classes
+        classes = sorted(os.listdir(path_sk))
+
+        # divide the classes
+        if split_eccv_2018:
+            # According to Yelamarthi et al., "A Zero-Shot Framework for Sketch Based Image Retrieval", ECCV 2018.
+            cur_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
+            with open(os.path.join(cur_path, "test_classes_eccv_2018.txt")) as fp:
+                te_classes = fp.read().splitlines()
+                va_classes = te_classes
+                tr_classes = np.setdiff1d(classes, np.union1d(te_classes, va_classes))
+        else:
+            # According to Shen et al., "Zero-Shot Sketch-Image Hashing", CVPR 2018.
+            np.random.seed(0)
+            tr_classes = np.random.choice(classes, int(0.8 * len(classes)), replace=False)
+            va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.1 * len(classes)), replace=False)
+            te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+
+        idx_tr_im, idx_tr_sk = _get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train',
+                                                          filter_sketch=filter_sketch)
+        idx_va_im, idx_va_sk = _get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid',
+                                                          filter_sketch=filter_sketch)
+        idx_te_im, idx_te_sk = _get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test',
+                                                          filter_sketch=filter_sketch)
+
+        splits = dict()
+
+        splits['tr_fls_sk'] = fls_sk[idx_tr_sk]
+        splits['va_fls_sk'] = fls_sk[idx_va_sk]
+        splits['te_fls_sk'] = fls_sk[idx_te_sk]
+
+        splits['tr_clss_sk'] = clss_sk[idx_tr_sk]
+        splits['va_clss_sk'] = clss_sk[idx_va_sk]
+        splits['te_clss_sk'] = clss_sk[idx_te_sk]
+
+        splits['tr_fls_im'] = fls_im[idx_tr_im]
+        splits['va_fls_im'] = fls_im[idx_va_im]
+        splits['te_fls_im'] = fls_im[idx_te_im]
+
+        splits['tr_clss_im'] = clss_im[idx_tr_im]
+        splits['va_clss_im'] = clss_im[idx_va_im]
+        splits['te_clss_im'] = clss_im[idx_te_im]
+
+        return splits
+
     def _load_pickled_model(self, model_dir, model_file, model_pt_path):
         model_def_path = os.path.join(model_dir, model_file)
+        logger.debug("model_def_path {}".format(model_def_path))
         if not os.path.isfile(model_def_path):
             raise RuntimeError("Missing the model.py file")
 
@@ -109,6 +181,7 @@ class ModelHandler(BaseHandler):
         ]
         model_class_definitions = classes
         class_size = len(model_class_definitions)
+
         # if len(model_class_definitions) != 1:
         #     raise ValueError(
         #         "Expected only one class as model definition. {}".format(
@@ -116,15 +189,114 @@ class ModelHandler(BaseHandler):
         #         )
         #     )
 
+
         model_class = model_class_definitions[class_size-2]
         logger.debug("class : {}".format(model_class))
+        logger.debug("model_pt_path {}".format(model_def_path))
+
         state_dict = torch.load(model_pt_path)
+        sem_dim = 0
+        path_dataset = '/home/model-server/sem_pcyc/dataset'
+        path_aux = '/home/model-server/sem_pcyc/aux'
+        dataset = 'intersection'
+        semantic_models = ['word2vec-google-news']
+        files_semantic_labels = []
+        dim_out = 64
+        str_aux = ''
+        ds_var = None
+        photo_dir = 'images'
+        sketch_dir = 'sketces'
+        photo_sd = ''
+        sketch_sd = ''
+        im_sz = 224
+        sk_sz = 224
+
+        if '_' in dataset:
+            token = dataset.split('_')
+            dataset = token[0]
+            ds_var = token[1]
+
+
+        semantic_models = sorted(semantic_models)
+        model_name = '+'.join(semantic_models)
+        print('model_name : ' + model_name)
+        # 데이터 셋 경로
+        root_path = os.path.join(path_dataset, dataset)
+        # 스케치 모델 경로
+        path_sketch_model = os.path.join(path_aux, 'CheckPoints', dataset, 'sketch')
+        print('path_sketch_model : ' + path_sketch_model)
+        # 썸네일 모델 경로
+        path_image_model = os.path.join(path_aux, 'CheckPoints', dataset, 'image')
+        print('path_image_model : ' + path_image_model)
+
+        path_cp = os.path.join(path_aux, 'CheckPoints', dataset, str_aux, model_name, str(dim_out))
+        print('path_cp : ' + path_cp)
+
+        # 시멘틱 모델 벡터 값 가져오기
+        for f in semantic_models:
+            fi = os.path.join(path_aux, 'Semantic', dataset, f + '.npy')
+            print('fi : ' + fi)
+            files_semantic_labels.append(fi)
+            sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
+
+        # Parameters for transforming the images
+        transform_image = transforms.Compose([transforms.Resize((im_sz, im_sz)), transforms.ToTensor()])
+        transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
+
+        logger.debug('Loading data ...')
+        splits = _load_files_sketchy_zeroshot(root_path=root_path, split_eccv_2018=False,
+                                                   photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
+                                                   sketch_sd=sketch_sd)
+        # Combine the valid and test set into test set
+        splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
+        print('----te_fls_sk----')
+        print(splits['te_fls_sk'])
+        splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
+        print('----te_clss_sk----')
+        print(splits['te_clss_sk'])
+        splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
+        print('----te_fls_im----')
+        print(splits['te_fls_im'])
+        splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
+        print('----te_clss_im----')
+        print(splits['te_clss_im'])
+
+
+        dict_clss = _create_dict_texts(splits['tr_clss_im'])
+
+        params_model = dict()
+        params_model['path_sketch_model'] = '/ml_data/sem_pcyc/aux/CheckPoints/intersection/sketch'
+        params_model['path_image_model'] = '/ml_data/sem_pcyc/aux/CheckPoints/intersection/image'
+        # Dimensions
+        params_model['dim_out'] = 64
+        params_model['sem_dim'] = sem_dim
+        # Number of classes
+        params_model['num_clss'] = len(dict_clss)
+        # Weight (on losses) parameters
+        params_model['lambda_se'] = 10
+        params_model['lambda_im'] = 10
+        params_model['lambda_sk'] = 10
+        params_model['lambda_gen_cyc'] = 1
+        params_model['lambda_gen_adv'] = 1
+        params_model['lambda_gen_cls'] = 1
+        params_model['lambda_gen_reg'] = 0.1
+        params_model['lambda_disc_se'] = 0.25
+        params_model['lambda_disc_sk'] = 0.5
+        params_model['lambda_disc_im'] = 0.5
+        params_model['lambda_regular'] = 0.001
+        # Optimizers' parameters
+        params_model['lr'] = 0.0001
+        params_model['momentum'] = 0.9
+        params_model['milestones'] = []
+        params_model['gamma'] = 0.1
+        # Files with semantic labels
+        params_model['files_semantic_labels'] = files_semantic_labels
+        # Class dictionary
+        params_model['dict_clss'] = dict_clss
+
         model = model_class()
         model.load_state_dict(state_dict)
         return model
-
-
-
 
     def preprocess(self, data):
         """
@@ -138,7 +310,6 @@ class ModelHandler(BaseHandler):
             preprocessed_data = data[0].get("body")
             print(preprocessed_data)
         return preprocessed_data
-
 
     def inference(self, model_input):
         """
@@ -171,3 +342,88 @@ class ModelHandler(BaseHandler):
         model_input = self.preprocess(data)
         model_output = self.inference(model_input)
         return self.postprocess(model_output)
+
+    def _create_dict_texts(texts):
+        texts = sorted(list(set(texts)))
+        d = {l: i for i, l in enumerate(texts)}
+        return d
+
+    def _get_coarse_grained_samples(classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
+
+        idx_im_ret = np.array([], dtype=np.int)
+        idx_sk_ret = np.array([], dtype=np.int)
+        clss_im = np.array([f.split('/')[-2] for f in fls_im])
+        clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
+        names_sk = np.array([f.split('-')[0] for f in fls_sk])
+        for i, c in enumerate(classes):
+            idx1 = np.where(clss_im == c)[0]
+            idx2 = np.where(clss_sk == c)[0]
+            if set_type == 'train':
+                idx_cp = list(itertools.product(idx1, idx2))
+                if len(idx_cp) > 100000:
+                    random.seed(i)
+                    idx_cp = random.sample(idx_cp, 100000)
+                idx1, idx2 = zip(*idx_cp)
+            else:
+                # remove duplicate sketches
+                if filter_sketch:
+                    names_sk_tmp = names_sk[idx2]
+                    idx_tmp = np.unique(names_sk_tmp, return_index=True)[1]
+                    idx2 = idx2[idx_tmp]
+            idx_im_ret = np.concatenate((idx_im_ret, idx1), axis=0)
+            idx_sk_ret = np.concatenate((idx_sk_ret, idx2), axis=0)
+
+        return idx_im_ret, idx_sk_ret
+
+    def _load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd='', dataset=''):
+
+        path_im = os.path.join(root_path, photo_dir, photo_sd)
+        path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
+
+        # image files and classes
+        if dataset == '':
+            fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+        else:
+            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        print('load_files_tuberlin_zeroshot-----------fls_im.size----------')
+        print(len(fls_im))
+        fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
+        clss_im = np.array([f.split('/')[-2] for f in fls_im])
+
+        # sketch files and classes
+        fls_sk = glob.glob(os.path.join(path_sk, '*', '*.png'))
+        fls_sk = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_sk])
+        clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
+
+        # all the unique classes
+        classes = np.unique(clss_im)
+
+        # divide the classes, done according to the "Zero-Shot Sketch-Image Hashing" paper
+        np.random.seed(0)
+        tr_classes = np.random.choice(classes, int(0.88 * len(classes)), replace=False)
+        va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
+        te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+
+        idx_tr_im, idx_tr_sk = get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
+        idx_va_im, idx_va_sk = get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
+        idx_te_im, idx_te_sk = get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
+
+        splits = dict()
+
+        splits['tr_fls_sk'] = fls_sk[idx_tr_sk]
+        splits['va_fls_sk'] = fls_sk[idx_va_sk]
+        splits['te_fls_sk'] = fls_sk[idx_te_sk]
+
+        splits['tr_clss_sk'] = clss_sk[idx_tr_sk]
+        splits['va_clss_sk'] = clss_sk[idx_va_sk]
+        splits['te_clss_sk'] = clss_sk[idx_te_sk]
+
+        splits['tr_fls_im'] = fls_im[idx_tr_im]
+        splits['va_fls_im'] = fls_im[idx_va_im]
+        splits['te_fls_im'] = fls_im[idx_te_im]
+
+        splits['tr_clss_im'] = clss_im[idx_tr_im]
+        splits['va_clss_im'] = clss_im[idx_va_im]
+        splits['te_clss_im'] = clss_im[idx_te_im]
+
+        return splits

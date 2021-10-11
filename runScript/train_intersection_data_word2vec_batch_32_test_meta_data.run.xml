@@ -1,9 +1,10 @@
 <component name="ProjectRunConfigurationManager">
-  <configuration default="false" name="train_intersection_data_word2vec_batch_32_test_meta_data" type="PythonConfigurationType" factoryName="Python">
+  <configuration default="false" name="train_intersection_data_word2vec_epochs_10_early_stop_10_lr_0.0001_batch_32" type="PythonConfigurationType" factoryName="Python">
     <module name="sem-pcyc" />
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
+      <env name="PYTHONUNBUFFERED" value="1" />
       <env name="CUDA_VISIBLE_DEVICES" value="1 PYTHONUNBUFFERED=1" />
     </envs>
     <option name="SDK_HOME" value="" />

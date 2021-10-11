@@ -2,7 +2,7 @@
   <configuration default="false" name="run torchserver with sem_pycyc.mar" type="docker-deploy" factoryName="docker-image" server-name="Docker">
     <deployment type="docker-image">
       <settings>
-        <option name="imageTag" value="pytorch/torchserve:latest" />
+        <option name="imageTag" value="pytorch/torchserve:latest-gpu" />
         <option name="command" value="torchserve --ts-config ./ts/config.properties --start --model-store $PROJECT_DIR$/../../../model-server/model-store --models sem_pcyc=sem_pcyc.mar  " />
         <option name="containerName" value="mar" />
         <option name="portBindings">
@@ -29,6 +29,10 @@
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="$PROJECT_DIR$/../../../model-server/ts" />
               <option name="hostPath" value="$PROJECT_DIR$/ts" />
+            </DockerVolumeBindingImpl>
+            <DockerVolumeBindingImpl>
+              <option name="containerPath" value="$PROJECT_DIR$/../../../model-server/sem_pcyc" />
+              <option name="hostPath" value="/ml_data/sem_pcyc" />
             </DockerVolumeBindingImpl>
           </list>
         </option>
