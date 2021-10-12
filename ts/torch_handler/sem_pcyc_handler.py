@@ -63,15 +63,15 @@ class ModelHandler(BaseHandler):
         model_file = self.manifest["model"].get("modelFile", "")
 
         if model_file:
-            logger.debug("Loading eager model")
+            print("Loading eager model")
             self.model = self._load_pickled_model(model_dir, model_file, model_pt_path)
         else:
-            logger.debug("Loading torchscript model")
+            print("Loading torchscript model")
             self.model = self._load_torchscript_model(model_pt_path)
 
-        self.model.to(self.device)
-        self.model.eval()
-        logger.debug("Model file %s loaded successfully", model_pt_path)
+        # self.model.to(self.device)
+        # self.model.eval()
+        print("Model file %s loaded successfully", model_pt_path)
 
         #  load the model, refer 'custom handler class' above for details
 
@@ -99,74 +99,9 @@ class ModelHandler(BaseHandler):
 
         return classes
 
-    def _load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=False, photo_dir='photo',
-                                    sketch_dir='sketch', photo_sd='tx_000000000000', sketch_sd='tx_000000000000',
-                                    dataset=''):
-        # paths of sketch and image
-        path_im = os.path.join(root_path, photo_dir, photo_sd)
-        path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
-
-        # all the image and sketch files together with classes and core names
-        fls_sk = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_sk, '*/*.png'))])
-        if dataset == '':
-            fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
-        else:
-            fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.base64'))])
-        print('load_files_sketchy_zeroshot-----------fls_im.size--------------')
-        print(len(fls_im))
-
-        # classes for image and sketch
-        clss_sk = np.array([f.split('/')[0] for f in fls_sk])
-        clss_im = np.array([f.split('/')[0] for f in fls_im])
-
-        # all the unique classes
-        classes = sorted(os.listdir(path_sk))
-
-        # divide the classes
-        if split_eccv_2018:
-            # According to Yelamarthi et al., "A Zero-Shot Framework for Sketch Based Image Retrieval", ECCV 2018.
-            cur_path = os.path.abspath(os.path.join(os.path.dirname(__file__), ".."))
-            with open(os.path.join(cur_path, "test_classes_eccv_2018.txt")) as fp:
-                te_classes = fp.read().splitlines()
-                va_classes = te_classes
-                tr_classes = np.setdiff1d(classes, np.union1d(te_classes, va_classes))
-        else:
-            # According to Shen et al., "Zero-Shot Sketch-Image Hashing", CVPR 2018.
-            np.random.seed(0)
-            tr_classes = np.random.choice(classes, int(0.8 * len(classes)), replace=False)
-            va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.1 * len(classes)), replace=False)
-            te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
-
-        idx_tr_im, idx_tr_sk = _get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train',
-                                                          filter_sketch=filter_sketch)
-        idx_va_im, idx_va_sk = _get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid',
-                                                          filter_sketch=filter_sketch)
-        idx_te_im, idx_te_sk = _get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test',
-                                                          filter_sketch=filter_sketch)
-
-        splits = dict()
-
-        splits['tr_fls_sk'] = fls_sk[idx_tr_sk]
-        splits['va_fls_sk'] = fls_sk[idx_va_sk]
-        splits['te_fls_sk'] = fls_sk[idx_te_sk]
-
-        splits['tr_clss_sk'] = clss_sk[idx_tr_sk]
-        splits['va_clss_sk'] = clss_sk[idx_va_sk]
-        splits['te_clss_sk'] = clss_sk[idx_te_sk]
-
-        splits['tr_fls_im'] = fls_im[idx_tr_im]
-        splits['va_fls_im'] = fls_im[idx_va_im]
-        splits['te_fls_im'] = fls_im[idx_te_im]
-
-        splits['tr_clss_im'] = clss_im[idx_tr_im]
-        splits['va_clss_im'] = clss_im[idx_va_im]
-        splits['te_clss_im'] = clss_im[idx_te_im]
-
-        return splits
-
     def _load_pickled_model(self, model_dir, model_file, model_pt_path):
         model_def_path = os.path.join(model_dir, model_file)
-        logger.debug("model_def_path {}".format(model_def_path))
+        print("model_def_path {}".format(model_def_path))
         if not os.path.isfile(model_def_path):
             raise RuntimeError("Missing the model.py file")
 
@@ -191,10 +126,12 @@ class ModelHandler(BaseHandler):
 
 
         model_class = model_class_definitions[class_size-2]
-        logger.debug("class : {}".format(model_class))
-        logger.debug("model_pt_path {}".format(model_def_path))
+        print("class : {}".format(model_class))
+        print("model_pt_path {}".format(model_def_path))
 
-        state_dict = torch.load(model_pt_path)
+        checkpoint = torch.load(model_pt_path)
+        best_map = checkpoint['best_map']
+        state_dict = checkpoint['state_dict']
         sem_dim = 0
         path_dataset = '/home/model-server/sem_pcyc/dataset'
         path_aux = '/home/model-server/sem_pcyc/aux'
@@ -205,7 +142,7 @@ class ModelHandler(BaseHandler):
         str_aux = ''
         ds_var = None
         photo_dir = 'images'
-        sketch_dir = 'sketces'
+        sketch_dir = 'sketches'
         photo_sd = ''
         sketch_sd = ''
         im_sz = 224
@@ -243,35 +180,36 @@ class ModelHandler(BaseHandler):
         transform_image = transforms.Compose([transforms.Resize((im_sz, im_sz)), transforms.ToTensor()])
         transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
 
-        logger.debug('Loading data ...')
-        splits = _load_files_sketchy_zeroshot(root_path=root_path, split_eccv_2018=False,
+        print('Loading data ...')
+        splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
                                                    photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
                                                    sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
         splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
         print('----te_fls_sk----')
-        print(splits['te_fls_sk'])
+        # print(splits['te_fls_sk'])
         splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
         print('----te_clss_sk----')
-        print(splits['te_clss_sk'])
+        # print(splits['te_clss_sk'])
         splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
         print('----te_fls_im----')
-        print(splits['te_fls_im'])
+        # print(splits['te_fls_im'])
         splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
         print('----te_clss_im----')
-        print(splits['te_clss_im'])
+        # print(splits['te_clss_im'])
 
 
-        dict_clss = _create_dict_texts(splits['tr_clss_im'])
+        dict_clss = self._create_dict_texts(splits['tr_clss_im'])
 
         params_model = dict()
-        params_model['path_sketch_model'] = '/ml_data/sem_pcyc/aux/CheckPoints/intersection/sketch'
-        params_model['path_image_model'] = '/ml_data/sem_pcyc/aux/CheckPoints/intersection/image'
+        params_model['path_sketch_model'] = path_sketch_model
+        params_model['path_image_model'] = path_image_model
         # Dimensions
         params_model['dim_out'] = 64
         params_model['sem_dim'] = sem_dim
         # Number of classes
         params_model['num_clss'] = len(dict_clss)
+        print(('num_clss : {}'.format(params_model['num_clss'])))
         # Weight (on losses) parameters
         params_model['lambda_se'] = 10
         params_model['lambda_im'] = 10
@@ -294,7 +232,15 @@ class ModelHandler(BaseHandler):
         # Class dictionary
         params_model['dict_clss'] = dict_clss
 
-        model = model_class()
+        model = model_class(params_model)
+        # Check cuda
+        print('Checking cuda...', end='')
+        # Check if CUDA is enabled
+        if torch.cuda.is_available():
+            print('*Cuda exists*...', end='')
+            model = model.cuda()
+        print('Done')
+
         model.load_state_dict(state_dict)
         return model
 
@@ -343,23 +289,32 @@ class ModelHandler(BaseHandler):
         model_output = self.inference(model_input)
         return self.postprocess(model_output)
 
-    def _create_dict_texts(texts):
+    def _create_dict_texts(self, texts):
         texts = sorted(list(set(texts)))
         d = {l: i for i, l in enumerate(texts)}
         return d
 
-    def _get_coarse_grained_samples(classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
+    def _get_coarse_grained_samples(self, classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
 
         idx_im_ret = np.array([], dtype=np.int)
         idx_sk_ret = np.array([], dtype=np.int)
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
         clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
         names_sk = np.array([f.split('-')[0] for f in fls_sk])
+
+        print('clss_im size : {}'.format(len(clss_im)))
+
+        print('fls_sk size : {}'.format(len(fls_sk)))
+        print('clss_sk size : {}'.format(len(clss_sk)))
+
+        print('names_sk size : {}'.format(len(names_sk)))
+
         for i, c in enumerate(classes):
             idx1 = np.where(clss_im == c)[0]
             idx2 = np.where(clss_sk == c)[0]
             if set_type == 'train':
                 idx_cp = list(itertools.product(idx1, idx2))
+                print('idx_cp size : {}'.format(len(idx_cp)))
                 if len(idx_cp) > 100000:
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
@@ -375,24 +330,30 @@ class ModelHandler(BaseHandler):
 
         return idx_im_ret, idx_sk_ret
 
-    def _load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd='', dataset=''):
+    def _load_files_tuberlin_zeroshot(self, root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd='', dataset=''):
 
+        print('start load_files_tuberlin_zeroshot')
         path_im = os.path.join(root_path, photo_dir, photo_sd)
         path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
+        print('path_im : {}'.format(path_im))
+        print('path_sk : {}'.format(path_sk))
 
         # image files and classes
         if dataset == '':
             fls_im = glob.glob(os.path.join(path_im, '*', '*'))
         else:
             fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
-        print('load_files_tuberlin_zeroshot-----------fls_im.size----------')
-        print(len(fls_im))
+        print('fls_im.size : {}'.format(len(fls_im)))
+
         fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
+
         # sketch files and classes
         fls_sk = glob.glob(os.path.join(path_sk, '*', '*.png'))
+        print('1 fls_sk.size : {}'.format(len(fls_sk)))
         fls_sk = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_sk])
+        print('2 fls_sk.size : {}'.format(len(fls_sk)))
         clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
 
         # all the unique classes
@@ -404,9 +365,9 @@ class ModelHandler(BaseHandler):
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
         te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
 
-        idx_tr_im, idx_tr_sk = get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
-        idx_va_im, idx_va_sk = get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
-        idx_te_im, idx_te_sk = get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
+        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
+        idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
+        idx_te_im, idx_te_sk = self._get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
 
         splits = dict()
 

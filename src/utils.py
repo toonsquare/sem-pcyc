@@ -206,8 +206,8 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
         fls_im = glob.glob(os.path.join(path_im, '*', '*'))
     else:
         fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
-    print('load_files_tuberlin_zeroshot-----------fls_im.size----------')
-    print(len(fls_im))
+    print('fls_im.size : {}'.format(len(fls_im)))
+
     fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
     clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
