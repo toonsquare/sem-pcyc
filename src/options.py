@@ -13,6 +13,8 @@ class Options:
     def __init__(self):
         # Parse options for processing
         parser = argparse.ArgumentParser(description='SEM-PCYC for Zero-Shot Sketch-based Image Retrieval.')
+        # Tooning skatch test image
+        parser.add_argument('--test-input', required=False, default='./house.png', help='absolute path of test skatech image')
         # Optional argument
         parser.add_argument('--dataset', required=True, default='Sketchy', help='Name of the dataset')
         # Different training test sets

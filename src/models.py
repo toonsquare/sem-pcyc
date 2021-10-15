@@ -183,8 +183,6 @@ class SEM_PCYC(nn.Module):
             self.sem.append(np.load(f, allow_pickle=True).item())
         self.dict_clss = params_model['dict_clss']
         print('--------------self.dem----------------')
-        print(self.sem)
-        print('Done')
 
         print('Initializing trainable models...', end='')
         # Generators

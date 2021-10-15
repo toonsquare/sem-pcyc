@@ -17,7 +17,9 @@ import torchvision.transforms as transforms
 import random
 
 from ts.torch_handler.base_handler import BaseHandler
+
 logger = logging.getLogger(__name__)
+
 
 class ModelHandler(BaseHandler):
     """
@@ -29,7 +31,6 @@ class ModelHandler(BaseHandler):
         self.initialized = False
         self.explain = False
         self.target = 0
-
 
     def initialize(self, context):
         """
@@ -50,7 +51,6 @@ class ModelHandler(BaseHandler):
         )
 
         model_dir = properties.get("model_dir")
-
 
         # Read model serialize/pt file
         serialized_file = self.manifest['model']['serializedFile']
@@ -124,8 +124,7 @@ class ModelHandler(BaseHandler):
         #         )
         #     )
 
-
-        model_class = model_class_definitions[class_size-2]
+        model_class = model_class_definitions[class_size - 2]
         print("class : {}".format(model_class))
         print("model_pt_path {}".format(model_def_path))
 
@@ -152,7 +151,6 @@ class ModelHandler(BaseHandler):
             token = dataset.split('_')
             dataset = token[0]
             ds_var = token[1]
-
 
         semantic_models = sorted(semantic_models)
         model_name = '+'.join(semantic_models)
@@ -182,8 +180,8 @@ class ModelHandler(BaseHandler):
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-                                                   photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
-                                                   sketch_sd=sketch_sd)
+                                                    photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
+                                                    sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
         splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
         print('----te_fls_sk----')
@@ -197,7 +195,6 @@ class ModelHandler(BaseHandler):
         splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
         print('----te_clss_im----')
         # print(splits['te_clss_im'])
-
 
         dict_clss = self._create_dict_texts(splits['tr_clss_im'])
 
@@ -242,6 +239,7 @@ class ModelHandler(BaseHandler):
         print('Done')
 
         model.load_state_dict(state_dict)
+        model.eval()
         return model
 
     def preprocess(self, data):
@@ -264,7 +262,8 @@ class ModelHandler(BaseHandler):
         :return: list of inference output in NDArray
         """
         # Do some inference call to engine here and return output
-        model_output = self.model.forward(model_input)
+        # model_output = self.model.forward(model_input)
+        model_output = [7777]
         return model_output
 
     def postprocess(self, inference_output):
@@ -330,7 +329,8 @@ class ModelHandler(BaseHandler):
 
         return idx_im_ret, idx_sk_ret
 
-    def _load_files_tuberlin_zeroshot(self, root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd='', dataset=''):
+    def _load_files_tuberlin_zeroshot(self, root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
+                                      photo_sd='', sketch_sd='', dataset=''):
 
         print('start load_files_tuberlin_zeroshot')
         path_im = os.path.join(root_path, photo_dir, photo_sd)
@@ -347,7 +347,6 @@ class ModelHandler(BaseHandler):
 
         fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
-
 
         # sketch files and classes
         fls_sk = glob.glob(os.path.join(path_sk, '*', '*.png'))

@@ -250,8 +250,20 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     return splits
 
 
-def save_qualitative_results(root, sketch_dir, sketch_sd, photo_dir, photo_sd, fls_sk, fls_im, dir_op, aps, sim,
-                             str_sim, nq=50, nim=20, im_sz=(256, 256), best=False, save_image=False):
+def save_qualitative_results(root,
+                             sketch_dir,
+                             sketch_sd,
+                             photo_dir,
+                             photo_sd,
+                             fls_sk,
+                             fls_im,
+                             dir_op,
+                             sim,
+                             nq=50,
+                             nim=20,
+                             im_sz=(256, 256),
+                             best=False,
+                             save_image=False):
 
     # Set directories according to dataset
     dir_sk = os.path.join(root, sketch_dir, sketch_sd)
@@ -263,10 +275,10 @@ def save_qualitative_results(root, sketch_dir, sketch_sd, photo_dir, photo_sd, f
         clean_folder(dir_op)
 
     if best:
-        ind_sk = np.argsort(-aps)[:nq]
+        ind_sk = np.argsort(-sim)[:nq]
     else:
         np.random.seed(0)
-        ind_sk = np.random.choice(len(aps), nq, replace=False)
+        ind_sk = np.random.choice(len(sim), nq, replace=False)
 
     # create a text file for results
     fp = open(os.path.join(dir_op, "Results.txt"), "w")

@@ -1,6 +1,6 @@
 <component name="ProjectRunConfigurationManager">
   <configuration default="false" name="make mar" type="ShConfigurationType">
-    <option name="SCRIPT_TEXT" value="conda activate etri_production &amp;&amp; rm -v ./model-store/sem_pcyc.mar &amp;&amp; torch-model-archiver --model-name sem_pcyc --version 1.0 --model-file ./src/models.py --serialized-file ./model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py &amp;&amp; mv -v ./sem_pcyc.mar ./model-store" />
+    <option name="SCRIPT_TEXT" value="conda activate etri_production &amp;&amp; rm -v ./model-store/sem_pcyc.mar &amp;&amp; torch-model-archiver --model-name sem_pcyc --version 1.0 --model-file ./src/models.py --serialized-file /ml_data/sem_pcyc/aux/CheckPoints/intersection/word2vec-google-news/64/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py &amp;&amp; mv -v ./sem_pcyc.mar ./model-store" />
     <option name="INDEPENDENT_SCRIPT_PATH" value="true" />
     <option name="SCRIPT_PATH" value="" />
     <option name="SCRIPT_OPTIONS" value="" />
