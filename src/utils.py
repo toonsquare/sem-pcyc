@@ -275,33 +275,23 @@ def save_qualitative_results(root,
         clean_folder(dir_op)
 
     if best:
-        ind_sk = np.argsort(-sim)[:nq]
+        ind_sk = np.argsort(-sim)[:10][0][:10]
     else:
         np.random.seed(0)
         ind_sk = np.random.choice(len(sim), nq, replace=False)
 
-    # create a text file for results
-    fp = open(os.path.join(dir_op, "Results.txt"), "w")
+    output=[]
+    for j, iim in enumerate(ind_sk):
+        filename = fls_im[iim].split("/")[-1]
+        id = filename.split('.')[0]
+        output.append(id)
+        im = Image.open(os.path.join(dir_im, fls_im[iim])).convert(mode='RGB').resize(im_sz)
+        im.save(os.path.join(os.getcwd(), str(j + 1) + '.png'))
 
-    for i, isk in enumerate(ind_sk):
-        fp.write("{0}, ".format(fls_sk[isk]))
-        if save_image:
-            sdir_op = os.path.join(dir_op, str(i + 1))
-            if not os.path.isdir(sdir_op):
-                os.makedirs(sdir_op)
-            sk = Image.open(os.path.join(dir_sk, fls_sk[isk])).convert(mode='RGB').resize(im_sz)
-            sk.save(os.path.join(sdir_op, fls_sk[isk].split('/')[0] + '.png'))
-        ind_im = np.argsort(-sim[isk])[:nim]
-        for j, iim in enumerate(ind_im):
-            if j < len(ind_im)-1:
-                fp.write("{0} {1}, ".format(fls_im[iim], str_sim[isk][iim]))
-            else:
-                fp.write("{0} {1}".format(fls_im[iim], str_sim[isk][iim]))
-            if save_image:
-                im = Image.open(os.path.join(dir_im, fls_im[iim])).convert(mode='RGB').resize(im_sz)
-                im.save(os.path.join(sdir_op, str(j + 1) + '_' + str(str_sim[isk][iim]) + '.png'))
-        fp.write("\n")
-    fp.close()
+    print(output)
+
+    return output
+
 
 
 def clean_folder(folder):
