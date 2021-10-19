@@ -15,6 +15,8 @@ import numpy as np
 import itertools
 import torchvision.transforms as transforms
 import random
+from io import BytesIO
+from PIL import Image, ImageOps
 
 from ts.torch_handler.base_handler import BaseHandler
 
@@ -31,6 +33,9 @@ class ModelHandler(BaseHandler):
         self.initialized = False
         self.explain = False
         self.target = 0
+        self.im_sz = None
+        self.sk_sz = None
+        self.transform_sketch = None
 
     def initialize(self, context):
         """
@@ -144,8 +149,8 @@ class ModelHandler(BaseHandler):
         sketch_dir = 'sketches'
         photo_sd = ''
         sketch_sd = ''
-        im_sz = 224
-        sk_sz = 224
+        self.im_sz = im_sz = 224
+        self.sk_sz = sk_sz = 224
 
         if '_' in dataset:
             token = dataset.split('_')
@@ -175,8 +180,7 @@ class ModelHandler(BaseHandler):
             sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
 
         # Parameters for transforming the images
-        transform_image = transforms.Compose([transforms.Resize((im_sz, im_sz)), transforms.ToTensor()])
-        transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
+        self.transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
@@ -250,10 +254,25 @@ class ModelHandler(BaseHandler):
         """
         # Take the input data and make it inference ready
         preprocessed_data = data[0].get("data")
+        sketch_embedding = ''
         if preprocessed_data is None:
             preprocessed_data = data[0].get("body")
-            print(preprocessed_data)
-        return preprocessed_data
+            preprocessed_data = Image.open(BytesIO(preprocessed_data))
+            preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+            transform_image = self.transform_sketch(preprocessed_data)
+            print('transform_image shape : {}'.format(transform_image.shape))
+            if torch.cuda.is_available():
+                transform_image = transform_image.cuda()
+                transform_image = transform_image.resize(1, 3, self.sk_sz, self.sk_sz)
+                sketch_embedding = self.model.get_sketch_embeddings(transform_image)
+            else:
+                print('cuda is not available for image transforming')
+
+            print('sketch_embedding shape : {}'.format(sketch_embedding.shape))
+
+        else:
+            print('input data error')
+        return sketch_embedding
 
     def inference(self, model_input):
         """

@@ -172,15 +172,15 @@ def main():
     # class dictionary
     dict_clss = utils.create_dict_texts(splits['tr_clss_im'])
 
-    data_test_sketch = DataGeneratorSketch(args.dataset, root_path, sketch_dir, sketch_sd, splits['te_fls_sk'],
-                                           splits['te_clss_sk'], transforms=transform_sketch)
+    # data_test_sketch = DataGeneratorSketch(args.dataset, root_path, sketch_dir, sketch_sd, splits['te_fls_sk'],
+    #                                        splits['te_clss_sk'], transforms=transform_sketch)
     data_test_image = DataGeneratorImage(args.dataset, root_path, photo_dir, photo_sd, splits['te_fls_im'],
                                          splits['te_clss_im'], transforms=transform_image)
     print('Done')
 
     # PyTorch test loader for sketch
-    test_loader_sketch = DataLoader(dataset=data_test_sketch, batch_size=args.batch_size, shuffle=False,
-                                    num_workers=args.num_workers, pin_memory=True)
+    # test_loader_sketch = DataLoader(dataset=data_test_sketch, batch_size=args.batch_size, shuffle=False,
+    #                                 num_workers=args.num_workers, pin_memory=True)
     # PyTorch test loader for image
     test_loader_image = DataLoader(dataset=data_test_image, batch_size=args.batch_size, shuffle=False,
                                    num_workers=args.num_workers, pin_memory=True)
@@ -240,7 +240,7 @@ def main():
         sem_pcyc_model.load_state_dict(checkpoint['state_dict'])
         print("Loaded best model '{0}' (epoch {1}; mAP@all {2:.4f})".format(best_model_file, epoch, best_map))
         print('***Test***')
-        valid_data = validate(test_loader_sketch, test_loader_image, sem_pcyc_model, epoch, args, test_input_image)
+        valid_data = validate(test_loader_image, sem_pcyc_model, epoch, args, test_input_image)
         # print('Results on test set: mAP@all = {1:.4f}, Prec@100 = {0:.4f}, mAP@200 = {3:.4f}, Prec@200 = {2:.4f}, '
         #       'Time = {4:.6f} || mAP@all (binary) = {6:.4f}, Prec@100 (binary) = {5:.4f}, mAP@200 (binary) = {8:.4f}, '
         #       'Prec@200 (binary) = {7:.4f}, Time (binary) = {9:.6f} '
@@ -252,7 +252,7 @@ def main():
               .format(valid_data['sim_euc']))
         print('Saving qualitative results...', end='')
         path_qualitative_results = os.path.join(path_results, 'qualitative_results')
-        utils.save_qualitative_results(root_path,
+        utils.save_tooning_qualitative_results(root_path,
                                        sketch_dir,
                                        sketch_sd,
                                        photo_dir,
@@ -270,7 +270,7 @@ def main():
         exit()
 
 
-def validate(valid_loader_sketch, valid_loader_image, sem_pcyc_model, epoch, args, test_input=False):
+def validate(valid_loader_image, sem_pcyc_model, epoch, args, test_input=False):
     # Switch to test mode
     sem_pcyc_model.eval()
 
@@ -334,7 +334,7 @@ def validate(valid_loader_sketch, valid_loader_image, sem_pcyc_model, epoch, arg
 
     if torch.cuda.is_available():
         test_input = test_input.cuda()
-        test_input = test_input.resize(1,3,224,224)
+        test_input = test_input.resize(1,3,args.im_sz,args.im_sz)
     test_input_em = sem_pcyc_model.get_sketch_embeddings(test_input)
     test_input_em = test_input_em.cpu().data.numpy()
     # acc_sk_em = np.concatenate(([], test_input_em), axis=0)
