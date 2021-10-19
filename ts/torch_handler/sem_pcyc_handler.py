@@ -69,8 +69,8 @@ class ModelHandler(BaseHandler):
             print("Loading torchscript model")
             self.model = self._load_torchscript_model(model_pt_path)
 
-        # self.model.to(self.device)
-        # self.model.eval()
+        self.model.to(self.device)
+        self.model.eval()
         print("Model file %s loaded successfully", model_pt_path)
 
         #  load the model, refer 'custom handler class' above for details
@@ -133,8 +133,8 @@ class ModelHandler(BaseHandler):
         best_map = checkpoint['best_map']
         state_dict = checkpoint['state_dict']
         sem_dim = 0
-        path_dataset = '/home/model-server/sem_pcyc/dataset'
-        path_aux = '/home/model-server/sem_pcyc/aux'
+        path_dataset = '/home/ubuntu/sem_pcyc/dataset'
+        path_aux = '/home/ubuntu/sem_pcyc/aux'
         dataset = 'intersection'
         semantic_models = ['word2vec-google-news']
         files_semantic_labels = []
@@ -388,3 +388,4 @@ class ModelHandler(BaseHandler):
         splits['te_clss_im'] = clss_im[idx_te_im]
 
         return splits
+

@@ -3,7 +3,7 @@
     <deployment type="docker-image">
       <settings>
         <option name="imageTag" value="pytorch/torchserve:latest-gpu" />
-        <option name="command" value="torchserve --ts-config ./ts/config.properties --start --model-store $PROJECT_DIR$/../../../model-server/model-store --models sem_pcyc=sem_pcyc.mar  " />
+        <option name="command" value="torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc.mar" />
         <option name="containerName" value="mar" />
         <option name="portBindings">
           <list>
@@ -32,7 +32,7 @@
             </DockerVolumeBindingImpl>
             <DockerVolumeBindingImpl>
               <option name="containerPath" value="$PROJECT_DIR$/../../../model-server/sem_pcyc" />
-              <option name="hostPath" value="/ml_data/sem_pcyc" />
+              <option name="hostPath" value="C:\Users\kimyw\PycharmProjects\sem-pcyc\" />
             </DockerVolumeBindingImpl>
           </list>
         </option>
