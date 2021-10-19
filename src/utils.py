@@ -280,6 +280,7 @@ def save_tooning_qualitative_results(root,
         np.random.seed(0)
         ind_sk = np.random.choice(len(sim), nq, replace=False)
 
+    print(fls_im)
     output=[]
     for j, iim in enumerate(ind_sk):
         filename = fls_im[iim].split("/")[-1]

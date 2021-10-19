@@ -17,6 +17,8 @@ import torchvision.transforms as transforms
 import random
 from io import BytesIO
 from PIL import Image, ImageOps
+from torch.utils.data import DataLoader
+from scipy.spatial.distance import cdist
 
 from ts.torch_handler.base_handler import BaseHandler
 
@@ -36,6 +38,16 @@ class ModelHandler(BaseHandler):
         self.im_sz = None
         self.sk_sz = None
         self.transform_sketch = None
+        self.dataset = None
+        self.num_workers = 4
+        self.batch_size = 32
+        self.test_loader_image = None
+        self.root_path = None
+        self.photo_dir = None
+        self.photo_sd = ''
+        self.sketch_sd = ''
+        self.sketch_dir = None
+        self.splits_test =[]
 
     def initialize(self, context):
         """
@@ -129,7 +141,11 @@ class ModelHandler(BaseHandler):
         #         )
         #     )
 
+        print(model_class_definitions)
+        for cls in model_class_definitions:
+            print(cls)
         model_class = model_class_definitions[class_size - 2]
+        data_generator_image = model_class_definitions[1]
         print("class : {}".format(model_class))
         print("model_pt_path {}".format(model_def_path))
 
@@ -139,14 +155,14 @@ class ModelHandler(BaseHandler):
         sem_dim = 0
         path_dataset = '/home/model-server/sem_pcyc/dataset'
         path_aux = '/home/model-server/sem_pcyc/aux'
-        dataset = 'intersection'
+        self.dataset = dataset = 'intersection'
         semantic_models = ['word2vec-google-news']
         files_semantic_labels = []
         dim_out = 64
         str_aux = ''
         ds_var = None
-        photo_dir = 'images'
-        sketch_dir = 'sketches'
+        self.photo_dir = photo_dir = 'images'
+        self.sketch_dir = sketch_dir = 'sketches'
         photo_sd = ''
         sketch_sd = ''
         self.im_sz = im_sz = 224
@@ -161,7 +177,7 @@ class ModelHandler(BaseHandler):
         model_name = '+'.join(semantic_models)
         print('model_name : ' + model_name)
         # 데이터 셋 경로
-        root_path = os.path.join(path_dataset, dataset)
+        self.root_path = root_path = os.path.join(path_dataset, dataset)
         # 스케치 모델 경로
         path_sketch_model = os.path.join(path_aux, 'CheckPoints', dataset, 'sketch')
         print('path_sketch_model : ' + path_sketch_model)
@@ -180,12 +196,14 @@ class ModelHandler(BaseHandler):
             sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
 
         # Parameters for transforming the images
+        self.transform_image = transforms.Compose([transforms.Resize((im_sz, im_sz)), transforms.ToTensor()])
         self.transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-                                                    photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
-                                                    sketch_sd=sketch_sd)
+                                                                  photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                                  photo_sd=photo_sd,
+                                                                  sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
         splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
         print('----te_fls_sk----')
@@ -200,7 +218,20 @@ class ModelHandler(BaseHandler):
         print('----te_clss_im----')
         # print(splits['te_clss_im'])
 
+        print('te_fls_im type.{}'.format(type(splits['te_fls_im'])))
+        self.splits_test = splits['te_fls_im']
         dict_clss = self._create_dict_texts(splits['tr_clss_im'])
+
+        data_test_image = data_generator_image(self.dataset, root_path, photo_dir, photo_sd, splits['te_fls_im'],
+                                               splits['te_clss_im'], transforms=self.transform_image)
+        print('Done')
+
+        # PyTorch test loader for sketch
+        # test_loader_sketch = DataLoader(dataset=data_test_sketch, batch_size=args.batch_size, shuffle=False,
+        #                                 num_workers=args.num_workers, pin_memory=True)
+        # PyTorch test loader for image
+        self.test_loader_image = DataLoader(dataset=data_test_image, batch_size=self.batch_size, shuffle=False,
+                                            num_workers=self.num_workers, pin_memory=True)
 
         params_model = dict()
         params_model['path_sketch_model'] = path_sketch_model
@@ -282,8 +313,34 @@ class ModelHandler(BaseHandler):
         """
         # Do some inference call to engine here and return output
         # model_output = self.model.forward(model_input)
-        model_output = [7777]
-        return model_output
+        for i, (im, cls_im) in enumerate(self.test_loader_image):
+            if torch.cuda.is_available():
+                im = im.cuda()
+
+                # Image embedding into a semantic space
+            im_em = self.model.get_image_embeddings(im)
+
+            # Accumulate sketch embedding
+            if i == 0:
+                acc_im_em = im_em.cpu().data.numpy()
+                acc_cls_im = cls_im
+            else:
+                acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)
+                acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)
+
+        model_input = model_input.cpu().data.numpy()
+        # acc_sk_em = np.concatenate(([], test_input_em), axis=0)
+        print('test_input_em success shape : {}'.format(model_input.shape))
+
+        # Compute mAP
+        print('Computing evaluation metrics...', end='')
+
+        # Compute similarity
+        sim_euc = np.exp(-cdist(model_input, acc_im_em, metric='euclidean'))
+        print('sim_euc shape : {}'.format(sim_euc.shape))
+        print('Done')
+
+        return sim_euc
 
     def postprocess(self, inference_output):
         """
@@ -292,8 +349,25 @@ class ModelHandler(BaseHandler):
         :return: list of predict results
         """
         # Take output from network and post-process to desired format
-        postprocess_output = inference_output
-        return postprocess_output
+        dir_im = os.path.join(self.root_path, self.photo_dir, self.photo_sd)
+        fls_im = np.asarray(self.splits_test)
+        print(fls_im)
+        print(type(fls_im))
+        print('fls_im size : {}'.format(len(fls_im)))
+
+        postprocess_output = []
+
+        ind_sk = np.argsort(-inference_output)[:10][0][:10]
+        print('ind_sk shape {}'.format(ind_sk.shape))
+        for j, iim in enumerate(ind_sk):
+            print('iim : {}'.format(iim))
+            filename = fls_im[iim].split("/")[-1]
+            id = filename.split('.')[0]
+            postprocess_output.append(id)
+            # im = Image.open(os.path.join(dir_im, fls_im[iim])).convert(mode='RGB').resize(self.im_sz)
+            # im.save(os.path.join(os.getcwd(), str(j + 1) + '.png'))
+        print(postprocess_output)
+        return [postprocess_output]
 
     def handle(self, data, context):
         """
@@ -332,7 +406,7 @@ class ModelHandler(BaseHandler):
             idx2 = np.where(clss_sk == c)[0]
             if set_type == 'train':
                 idx_cp = list(itertools.product(idx1, idx2))
-                print('idx_cp size : {}'.format(len(idx_cp)))
+                # print('idx_cp size : {}'.format(len(idx_cp)))
                 if len(idx_cp) > 100000:
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
