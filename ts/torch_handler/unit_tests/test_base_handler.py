@@ -7,7 +7,7 @@ Ensures it can load and execute an example model
 
 import sys
 import pytest
-from ts.torch_handler.base_handler import BaseHandler
+from ts.torch_handler.sem_pcyc_handler import BaseHandler
 from .test_utils.mock_context import MockContext
 
 sys.path.append('ts/torch_handler/unit_tests/models/tmp')

@@ -9,7 +9,7 @@ import base64
 import torch
 from PIL import Image
 from captum.attr import IntegratedGradients
-from .base_handler import BaseHandler
+from .sem_pcyc_handler import BaseHandler
 
 
 class VisionHandler(BaseHandler, ABC):
