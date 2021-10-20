@@ -35,7 +35,7 @@ def get_coarse_grained_samples(classes, fls_im, fls_sk, set_type='train', filter
     return idx_im_ret, idx_sk_ret
 
 def load_files_tuberlin_zeroshot( root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
-                                  photo_sd='', sketch_sd='', dataset='intersection'):
+                                  photo_sd='', sketch_sd='', dataset=''):
     path_im = os.path.join(root_path, photo_dir, photo_sd)
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
@@ -93,13 +93,14 @@ def images_preprocessing(root_path):
     sketch_sd = ''
     image_test = load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
                                                    photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
-                                                   sketch_sd=sketch_sd)
+                                                   sketch_sd=sketch_sd,dataset='intersection')
 
     # 클래스명이 필요하기 때문에 image_test라는 튜플의 첫 번째 인덱스를 all_clss_im으로 저장
     # str_sim이 필요가 없지만 DataGeneratorImage 클래스에서는 clss_im이 사용되므로 일단 구해놓기
     all_class_image = image_test["tr_clss_im"]
     all_files_image = image_test["tr_fls_im"]
 
+    print(all_files_image)
     transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
 
     # 이미지들을 tensor화 하는 단계
@@ -107,7 +108,7 @@ def images_preprocessing(root_path):
                                          all_class_image, transforms=transform)
 
     # tensor화된 이미지들을 load하는 단계
-    test_loader_image = DataLoader(dataset=data_test_image, batch_size=128, shuffle=False, num_workers=4,
+    test_loader_image = DataLoader(dataset=data_test_image, batch_size=32, shuffle=False, num_workers=4,
                                    pin_memory=True)
 
     # 데이터를 enumerate()를 통해 im(이미지)와 cls_im 변수에 각각 vertor와 클래스명들을 담아준다.
@@ -141,10 +142,10 @@ photo_dir = 'images'
 sketch_dir = 'sketches'
 photo_sd = ''
 sketch_sd = ''
-
+print("root_path",root_path)
 splits= load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
                                                    photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
-                                                   sketch_sd=sketch_sd)
+                                                   sketch_sd=sketch_sd,dataset='intersection')
 
 path_sketch_model = os.path.join(path_aux, 'CheckPoints', dataset, 'sketch')
 path_image_model = os.path.join(path_aux, 'CheckPoints', dataset, 'image')

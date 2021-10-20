@@ -1,48 +1,58 @@
+# custom handler file
+
+# model_handler.py
+
 """
-Base default handler to load torchscript or eager mode [state_dict] models
-Also, provides handle method per torch serve custom model specification
+ModelHandler defines a custom model handler.
 """
-import abc
-import logging
+import inspect
+import torch
 import os
 import importlib.util
-import time
-import torch
-import numpy as np
 import glob
+import logging
+import numpy as np
 import itertools
-from scipy.spatial.distance import cdist
-import random
-import importlib.util
-import inspect
-from PIL import Image
-
-# pytorch, torch vision
-from torch.utils.data import DataLoader
 import torchvision.transforms as transforms
+import random
+from io import BytesIO
+from PIL import Image, ImageOps
+from torch.utils.data import DataLoader
+from scipy.spatial.distance import cdist
+
+from ts.torch_handler.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
 
 
-class BaseHandler(abc.ABC):
+class ModelHandler(BaseHandler):
     """
-    Base default handler to load torchscript or eager mode [state_dict] models
-    Also, provides handle method per torch serve custom model specification
+    A custom model handler implementation.
     """
 
     def __init__(self):
-        self.model = None
-        self.mapping = None
-        self.device = None
+        self._context = None
         self.initialized = False
-        self.context = None
-        self.manifest = None
-        self.map_location = None
         self.explain = False
         self.target = 0
-        self.image_emb = self.np_load(
-            "./images_embedding.npy"
+        self.im_sz = None
+        self.sk_sz = None
+        self.transform_sketch = None
+        self.dataset = None
+        self.num_workers = 4
+        self.batch_size = 32
+        self.test_loader_image = None
+        self.root_path = None
+        self.photo_dir = None
+        self.photo_sd = ''
+        self.sketch_sd = ''
+        self.sketch_dir = None
+        self.splits_test =[]
+        self.splits_train =[]
+        self.image_emd = self.np_load(
+            "./image_embedding.npy"
         )
+    # embedding npy file load
     def np_load(self, npy_path):
         images_emd = np.load(npy_path)
         return images_emd
@@ -68,10 +78,8 @@ class BaseHandler(abc.ABC):
         model_dir = properties.get("model_dir")
 
         # Read model serialize/pt file
-        # 나중에 사용될 acc_im_em이 담긴 .npy파일을 extra_file로 해서 넣기!!!!!!
         serialized_file = self.manifest['model']['serializedFile']
         model_pt_path = os.path.join(model_dir, serialized_file)
-        # extra_file =
 
         if not os.path.isfile(model_pt_path):
             raise RuntimeError("Missing the model.pt file")
@@ -86,8 +94,8 @@ class BaseHandler(abc.ABC):
             print("Loading torchscript model")
             self.model = self._load_torchscript_model(model_pt_path)
 
-        self.model.to(self.device)
-        self.model.eval()
+        # self.model.to(self.device)
+        # self.model.eval()
         print("Model file %s loaded successfully", model_pt_path)
 
         #  load the model, refer 'custom handler class' above for details
@@ -140,7 +148,11 @@ class BaseHandler(abc.ABC):
         #         )
         #     )
 
+        print(model_class_definitions)
+        for cls in model_class_definitions:
+            print(cls)
         model_class = model_class_definitions[class_size - 2]
+        data_generator_image = model_class_definitions[1]
         print("class : {}".format(model_class))
         print("model_pt_path {}".format(model_def_path))
 
@@ -150,33 +162,33 @@ class BaseHandler(abc.ABC):
         sem_dim = 0
         path_dataset = '/home/ubuntu/sem_pcyc/dataset'
         path_aux = '/home/ubuntu/sem_pcyc/aux'
-        dataset = 'intersection'
+        self.dataset = dataset = 'intersection'
         semantic_models = ['word2vec-google-news']
         files_semantic_labels = []
         dim_out = 64
         str_aux = ''
         ds_var = None
-        photo_dir = 'images'
-        sketch_dir = 'sketches'
+        self.photo_dir = photo_dir = 'images'
+        self.sketch_dir = sketch_dir = 'sketches'
         photo_sd = ''
         sketch_sd = ''
-        im_sz = 224
-        sk_sz = 224
+        self.im_sz = im_sz = 224
+        self.sk_sz = sk_sz = 224
 
-        if '_' in dataset:
-            token = dataset.split('_')
-            dataset = token[0]
-            ds_var = token[1]
+        # if '_' in dataset: # 데이터 셋은 intersection으로 고정이기 때문에 이 if문 삭제
+        #     token = dataset.split('_')
+        #     dataset = token[0]
+        #     ds_var = token[1]
 
-        semantic_models = sorted(semantic_models)
+        # semantic_models = sorted(semantic_models) # semantic_models 타입이 리스트인데 이 리스트에 하나밖에 없기 때문에 sort 필요 없음
         model_name = '+'.join(semantic_models)
         print('model_name : ' + model_name)
         # 데이터 셋 경로
-        root_path = os.path.join(path_dataset, dataset)
-        # 스케치 모델 경로
+        self.root_path = root_path = os.path.join(path_dataset, dataset)
+        # 스케치 모델 경로 # 스케치에 대한 pth 경로
         path_sketch_model = os.path.join(path_aux, 'CheckPoints', dataset, 'sketch')
         print('path_sketch_model : ' + path_sketch_model)
-        # 썸네일 모델 경로
+        # 썸네일 모델 경로 # 이미지에 대한 pth 경로
         path_image_model = os.path.join(path_aux, 'CheckPoints', dataset, 'image')
         print('path_image_model : ' + path_image_model)
 
@@ -191,13 +203,14 @@ class BaseHandler(abc.ABC):
             sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
 
         # Parameters for transforming the images
-        transform_image = transforms.Compose([transforms.Resize((im_sz, im_sz)), transforms.ToTensor()])
-        transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
+        self.transform_image = transforms.Compose([transforms.Resize((im_sz, im_sz)), transforms.ToTensor()])
+        self.transform_sketch = transforms.Compose([transforms.Resize((sk_sz, sk_sz)), transforms.ToTensor()])
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-                                                    photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
-                                                    sketch_sd=sketch_sd)
+                                                                  photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                                  photo_sd=photo_sd,
+                                                                  sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
         splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
         print('----te_fls_sk----')
@@ -212,7 +225,21 @@ class BaseHandler(abc.ABC):
         print('----te_clss_im----')
         # print(splits['te_clss_im'])
 
+        print('te_fls_im type.{}'.format(type(splits['te_fls_im'])))
+        self.splits_test = splits['te_fls_im']
+        self.splits_train = splits['tr_fls_im']
         dict_clss = self._create_dict_texts(splits['tr_clss_im'])
+
+        data_test_image = data_generator_image(self.dataset, root_path, photo_dir, photo_sd, splits['te_fls_im'],
+                                               splits['te_clss_im'], transforms=self.transform_image)
+        print('Done')
+
+        # PyTorch test loader for sketch
+        # test_loader_sketch = DataLoader(dataset=data_test_sketch, batch_size=args.batch_size, shuffle=False,
+        #                                 num_workers=args.num_workers, pin_memory=True)
+        # PyTorch test loader for image
+        self.test_loader_image = DataLoader(dataset=data_test_image, batch_size=self.batch_size, shuffle=False,
+                                            num_workers=self.num_workers, pin_memory=True)
 
         params_model = dict()
         params_model['path_sketch_model'] = path_sketch_model
@@ -255,7 +282,112 @@ class BaseHandler(abc.ABC):
         print('Done')
 
         model.load_state_dict(state_dict)
+        model.eval()
         return model
+
+    def preprocess(self, data):
+        """
+        Transform raw input into model input data.
+        :param batch: list of raw requests, should match batch size
+        :return: list of preprocessed model input data
+        """
+        # Take the input data and make it inference ready
+        preprocessed_data = data[0].get("data")
+        sketch_embedding = ''
+        if preprocessed_data is None:
+            preprocessed_data = data[0].get("body")
+            preprocessed_data = Image.open(BytesIO(preprocessed_data))
+            preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+            transform_image = self.transform_sketch(preprocessed_data)
+            print('transform_image shape : {}'.format(transform_image.shape))
+            if torch.cuda.is_available():
+                transform_image = transform_image.cuda()
+                transform_image = transform_image.resize(1, 3, self.sk_sz, self.sk_sz)
+                sketch_embedding = self.model.get_sketch_embeddings(transform_image)
+            else:
+                print('cuda is not available for image transforming')
+
+            print('sketch_embedding shape : {}'.format(sketch_embedding.shape))
+
+        else:
+            print('input data error')
+        return sketch_embedding
+
+    def inference(self, model_input):
+        """
+        Internal inference methods
+        :param model_input: transformed model input data
+        :return: list of inference output in NDArray
+        """
+        # Do some inference call to engine here and return output
+        # model_output = self.model.forward(model_input)
+        # for i, (im, cls_im) in enumerate(self.test_loader_image):
+        #     if torch.cuda.is_available():
+        #         im = im.cuda()
+        #
+        #         # Image embedding into a semantic space
+        #     im_em = self.model.get_image_embeddings(im)
+        #
+        #     # Accumulate sketch embedding
+        #     if i == 0:
+        #         acc_im_em = im_em.cpu().data.numpy()
+        #         acc_cls_im = cls_im
+        #     else:
+        #         acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)
+        #         acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)
+
+        model_input = model_input.cpu().data.numpy()
+        # acc_sk_em = np.concatenate(([], test_input_em), axis=0)
+        print('test_input_em success shape : {}'.format(model_input.shape))
+
+        # Compute mAP
+        print('Computing evaluation metrics...', end='')
+
+        # Compute similarity
+        sim_euc = np.exp(-cdist(model_input, self.image_emd, metric='euclidean'))
+        print('sim_euc shape : {}'.format(sim_euc.shape))
+        print('Done')
+
+        return sim_euc
+
+    def postprocess(self, inference_output):
+        """
+        Return inference result.
+        :param inference_output: list of inference output
+        :return: list of predict results
+        """
+        # Take output from network and post-process to desired format
+        dir_im = os.path.join(self.root_path, self.photo_dir, self.photo_sd)
+        fls_im = np.asarray(self.splits_train)
+        print(fls_im)
+        print(type(fls_im))
+        print('fls_im size : {}'.format(len(fls_im)))
+
+        postprocess_output = []
+
+        ind_sk = np.argsort(-inference_output)[:10][0][:10]
+        print('ind_sk shape {}'.format(ind_sk.shape))
+        for j, iim in enumerate(ind_sk):
+            print('iim : {}'.format(iim))
+            filename = fls_im[iim].split("/")[-1]
+            id = filename.split('.')[0]
+            postprocess_output.append(id)
+            # im = Image.open(os.path.join(dir_im, fls_im[iim])).convert(mode='RGB').resize(self.im_sz)
+            # im.save(os.path.join(os.getcwd(), str(j + 1) + '.png'))
+        print(postprocess_output)
+        return [postprocess_output]
+
+    def handle(self, data, context):
+        """
+        Invoke by TorchServe for prediction request.
+        Do pre-processing of data, prediction using model and postprocessing of prediciton output
+        :param data: Input data for prediction
+        :param context: Initial context contains model server system properties.
+        :return: prediction output
+        """
+        model_input = self.preprocess(data)
+        model_output = self.inference(model_input)
+        return self.postprocess(model_output)
 
     def _create_dict_texts(self, texts):
         texts = sorted(list(set(texts)))
@@ -270,12 +402,12 @@ class BaseHandler(abc.ABC):
         clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
         names_sk = np.array([f.split('-')[0] for f in fls_sk])
 
-        # print('clss_im size : {}'.format(len(clss_im)))
-        #
-        # print('fls_sk size : {}'.format(len(fls_sk)))
-        # print('clss_sk size : {}'.format(len(clss_sk)))
-        #
-        # print('names_sk size : {}'.format(len(names_sk)))
+        print('clss_im size : {}'.format(len(clss_im)))
+
+        print('fls_sk size : {}'.format(len(fls_sk)))
+        print('clss_sk size : {}'.format(len(clss_sk)))
+
+        print('names_sk size : {}'.format(len(names_sk)))
 
         for i, c in enumerate(classes):
             idx1 = np.where(clss_im == c)[0]
@@ -357,192 +489,3 @@ class BaseHandler(abc.ABC):
 
         return splits
 
-    def sketch_preprocessing(self, sketch):
-        '''
-        한 장의 스케치를 유클리디안 거리를 계산하기 위한 embedding을 만드는 전처리 과정
-        argument에 sketch 파일의 경로를 적어준다.
-        '''
-        print("-------------start sketch_preprocessing-------------")
-        print("sketch name :house")
-        sketch = "/home/ubuntu/projects/src/house.png"
-        transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
-
-        # sketch는 흑백이라 1채널인데, get_sketch_embeddings()하기 위해서는 3채널로 변환해주어야 한다.
-        sketch = Image.open(sketch).convert(mode="RGB").resize((224, 224))
-
-        # sketch를 tensor화 해주어야 한다.
-        sk = transform(sketch)
-
-        # 여러 장 쌓여있는 이미지들과
-        # 비교하기 위하여 3차원의 sketch를 4차원으로 늘리기
-        sk = sk.unsqueeze(dim=0)
-        print("sk_dim:", sk.shape)
-
-        # 모델을 처리하는 device를 cpu와 cuda 둘 중 하나로 맞춰줘야하기 때문에 cuda()로 device를 변환해주기
-        if torch.cuda.is_available():
-            sk = sk.cuda()
-
-        # sketch 한 장을 embedding하기
-        sk_em = self.model.get_sketch_embeddings(sk)
-        print("-------------end embeddings-------------")
-
-        # 유클리디안 거리 유사도 계산을 하기 위해 embedding된 tensor를 numpy array로 변환해주기
-        sk_em = sk_em.cpu().detach().numpy()
-        print("sk_em=",sk_em)
-        print("-------------END sketch_preprocessing-------------")
-
-        return sk_em
-
-    # def images_preprocessing(self):
-    #     '''
-    #     여러 장의 썸네일들을 유클리디안 거리를 계산하기 위한 embedding을 만드는 전처리 과정
-    #     argument에 썸네일들의 경로를 적어준다.
-    #     '''
-    #     print("-------------start image_preprocessing-------------")
-    #     path_dataset = '/home/ubuntu/sem_pcyc/dataset'
-    #     dataset = 'intersection'
-    #     root_path = os.path.join(path_dataset, dataset)
-    #     photo_dir = 'images'
-    #     sketch_dir = 'sketches'
-    #     photo_sd = ''
-    #     sketch_sd = ''
-    #     image_test = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-    #                                                     photo_dir=photo_dir, sketch_dir=sketch_dir, photo_sd=photo_sd,
-    #                                                     sketch_sd=sketch_sd)
-    #
-    #     # 클래스명이 필요하기 때문에 image_test라는 튜플의 첫 번째 인덱스를 all_clss_im으로 저장
-    #     # str_sim이 필요가 없지만 DataGeneratorImage 클래스에서는 clss_im이 사용되므로 일단 구해놓기
-    #     all_clss_im = image_test["tr_clss_im"]
-    #     all_fls_im = image_test["tr_fls_im"]
-    #
-    #     transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
-    #
-    #     dataset = 'intersection'
-    #     photo_dir = "images"
-    #     photo_sd = ""
-    #
-    #     # 이미지들을 tensor화 하는 단계
-    #     data_test_image = self.model.DataGeneratorImage(dataset, root_path, photo_dir, photo_sd, all_fls_im,
-    #                                                     all_clss_im, transforms=transform)
-    #
-    #     # tensor화된 이미지들을 load하는 단계
-    #     test_loader_image = DataLoader(dataset=data_test_image, batch_size=128, shuffle=False, num_workers=4,
-    #                                    pin_memory=True)
-    #
-    #     # 데이터를 enumerate()를 통해 im(이미지)와 cls_im 변수에 각각 vertor와 클래스명들을 담아준다.
-    #     for i, (im, cls_im) in enumerate(test_loader_image):
-    #         # im : 각각의 이미지들에 대한 1차원 vector
-    #         # cls_im : 각각의 이미지들에 대한 클래스(라벨링)
-    #         if torch.cuda.is_available():
-    #             im = im.cuda()
-    #
-    #         im_em = self.model.get_image_embeddings(im)
-    #
-    #         if i == 0:
-    #             acc_im_em = im_em.cpu().data.numpy()
-    #             acc_cls_im = cls_im
-    #         else:  # acc_im_em과 im_em을 concatenate한 것인데, 이것을 cpu로 담고 numpy() 배열로 바꿔주어 추후 cdist에 사용할 수 있게된다.
-    #             acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)  # 유클리디안
-    #             acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)  # str_sim에 사용 -> 필요 없음
-    #     print("-------------END image_preprocessing-------------")
-    #
-    #     return acc_im_em
-
-    def inference(self, sk_em):
-        '''
-        구해놓은 sketch와 images들의 embedding된 2차원 행열들을 유클리디안 거리 유사도 계산을 통해 2차원 행렬의 값을 구함
-        arguments에는 sketch & images들의 2차원 nparray가 필요하다
-        '''
-
-        # sketch 한 장과 여러 이미지가 쌓인 이미지들 간의 유클리디안 거리 계산
-        print("-------------START inference-----------")
-        sim_euc = np.exp(-cdist(sk_em, self.image_emb, metric='euclidean'))
-        print("-------------END inference-----------")
-
-        return sim_euc
-
-    def postprocessing(self, sim_euc):
-        '''
-        도출해 낸 유클리디안 거리에서 가장 가까운 순서대로 index를 가져오며, 그 인덱스를 가진 썸네일 파일의 이름을 가져온다.
-        arguments에는 도출한 유클리디안 거리와 root_path가 들어가는데 root_path는 fls_im을 생성하기 위해 필요하다.
-        '''
-        print("-------------START postprocessing-----------")
-
-
-        # all_fls_im를 생성
-        path_dataset = '/home/ubuntu/sem_pcyc/dataset'
-        dataset = 'intersection'
-        root_path = os.path.join(path_dataset, dataset)
-        path_im = os.path.join(root_path, "images", "")
-        all_fls_im = glob.glob(os.path.join(path_im, "*", "*.base64"))
-        all_fls_im = np.array(
-            [os.path.join(f.split("/")[-2], f.split("/")[-1]) for f in all_fls_im]
-        )
-
-        output = []
-        # 스케치 한 장에 대한 이미지들의 유클리디안 거리 값들을 np.argsort를 통해 가까운 인덱스를 100개 가져온다.
-        # np.argsort()에서 -를 붙일지 말지 정해야 함
-        ind_im = np.argsort(-sim_euc[0])[:10]
-        print("index(-sort):", ind_im)
-
-        # for문을 이용하여 fls_im array에서 인덱스 값들을 추려서 output 변수에 이름들을 넣어준다.
-        for i in ind_im:
-            output.append(all_fls_im[i])
-        print("-------------END postprocessing-----------")
-
-        return output
-
-    def handle(self, sketch, context):
-
-
-        start_time = time.time()
-        self.context = context
-        metrics = self.context.metrics
-        sketch_em = self.sketch_preprocessing(sketch)
-        #print("root_path", root_path)
-
-
-
-        if not self._is_explain():
-            sim_euc = self.inference(sketch_em)
-            output = self.postprocessing(sim_euc)
-            print("inference :{}".format(output))
-        else:
-            #output = self.explain_handle(data_preprocess, data)
-            print("inference failed !!!")
-        stop_time = time.time()
-        metrics.add_time('HandlerTime', round((stop_time - start_time) * 1000, 2), None, 'ms')
-        return output
-
-    def explain_handle(self, data_preprocess, raw_data):
-        """Captum explanations handler
-
-        Args:
-            data_preprocess (Torch Tensor): Preprocessed data to be used for captum
-            raw_data (list): The unprocessed data to get target from the request
-
-        Returns:
-            dict : A dictionary response with the explanations response.
-        """
-        output_explain = None
-        inputs = None
-        target = 0
-
-        logger.info("Calculating Explanations")
-        row = raw_data[0]
-        if isinstance(row, dict):
-            logger.info("Getting data and target")
-            inputs = row.get("data") or row.get("body")
-            target = row.get("target")
-            if not target:
-                target = 0
-
-        output_explain = self.get_insights(data_preprocess, inputs, target)
-        return output_explain
-
-    def _is_explain(self):
-        if self.context and self.context.get_request_header(0, "explain"):
-            if self.context.get_request_header(0, "explain") == "True":
-                self.explain = True
-                return True
-        return False
