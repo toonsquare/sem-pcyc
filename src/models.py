@@ -11,6 +11,7 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 import torch.nn.functional as F
+import torch.utils.data as data
 
 # user defined
 
@@ -183,7 +184,7 @@ class SEM_PCYC(nn.Module):
             self.sem.append(np.load(f, allow_pickle=True).item())
         self.dict_clss = params_model['dict_clss']
         print('--------------self.dem----------------')
-        print(self.sem)
+        # print(self.sem)
         print('Done')
 
         print('Initializing trainable models...', end='')
@@ -416,3 +417,24 @@ class SEM_PCYC(nn.Module):
         im_em = self.gen_im2se(self.image_model(im))
 
         return im_em
+
+class DataGeneratorImage(data.Dataset):
+  def __init__(self, dataset, root, photo_dir, photo_sd, fls_im, clss_im, transforms=None):
+
+    self.dataset = dataset
+    self.root = root
+    self.photo_dir = photo_dir
+    self.photo_sd = photo_sd
+    self.fls_im = fls_im
+    self.clss_im = clss_im
+    self.transforms = transforms
+
+  def __getitem__(self, item):
+    im = Image.open(os.path.join(self.root, self.photo_dir, self.photo_sd, self.fls_im[item])).convert(mode='RGB')
+    cls_im = self.clss_im[item]
+    if self.transforms is not None:
+        im = self.transforms(im)
+    return im, cls_im
+
+  def __len__(self):
+      return len(self.fls_im)

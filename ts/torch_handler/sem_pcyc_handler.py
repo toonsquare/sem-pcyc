@@ -50,7 +50,7 @@ class ModelHandler(BaseHandler):
         self.splits_test =[]
         self.splits_train =[]
         self.image_emd = self.np_load(
-            "./image_embedding.npy"
+            "./images_embedding.npy"
         )
     # embedding npy file load
     def np_load(self, npy_path):
@@ -230,8 +230,8 @@ class ModelHandler(BaseHandler):
         self.splits_train = splits['tr_fls_im']
         dict_clss = self._create_dict_texts(splits['tr_clss_im'])
 
-        data_test_image = data_generator_image(self.dataset, root_path, photo_dir, photo_sd, splits['te_fls_im'],
-                                               splits['te_clss_im'], transforms=self.transform_image)
+        data_test_image = data_generator_image(self.dataset, root_path, photo_dir, photo_sd, splits['tr_fls_im'],
+                                               splits['tr_clss_im'], transforms=self.transform_image)
         print('Done')
 
         # PyTorch test loader for sketch
@@ -280,6 +280,7 @@ class ModelHandler(BaseHandler):
             print('*Cuda exists*...', end='')
             model = model.cuda()
         print('Done')
+        print('tr_clss_len:', splits["tr_clss_im"].shape)
 
         model.load_state_dict(state_dict)
         model.eval()
@@ -319,23 +320,6 @@ class ModelHandler(BaseHandler):
         :param model_input: transformed model input data
         :return: list of inference output in NDArray
         """
-        # Do some inference call to engine here and return output
-        # model_output = self.model.forward(model_input)
-        # for i, (im, cls_im) in enumerate(self.test_loader_image):
-        #     if torch.cuda.is_available():
-        #         im = im.cuda()
-        #
-        #         # Image embedding into a semantic space
-        #     im_em = self.model.get_image_embeddings(im)
-        #
-        #     # Accumulate sketch embedding
-        #     if i == 0:
-        #         acc_im_em = im_em.cpu().data.numpy()
-        #         acc_cls_im = cls_im
-        #     else:
-        #         acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)
-        #         acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)
-
         model_input = model_input.cpu().data.numpy()
         # acc_sk_em = np.concatenate(([], test_input_em), axis=0)
         print('test_input_em success shape : {}'.format(model_input.shape))
@@ -359,19 +343,19 @@ class ModelHandler(BaseHandler):
         # Take output from network and post-process to desired format
         dir_im = os.path.join(self.root_path, self.photo_dir, self.photo_sd)
         fls_im = np.asarray(self.splits_train)
-        print(fls_im)
+        # print(fls_im)
         print(type(fls_im))
         print('fls_im size : {}'.format(len(fls_im)))
 
         postprocess_output = []
 
-        ind_sk = np.argsort(-inference_output)[:10][0][:10]
+        ind_sk = np.argsort(inference_output)[0][:20]
         print('ind_sk shape {}'.format(ind_sk.shape))
         for j, iim in enumerate(ind_sk):
             print('iim : {}'.format(iim))
             filename = fls_im[iim].split("/")[-1]
             id = filename.split('.')[0]
-            postprocess_output.append(id)
+            postprocess_output.append(fls_im[iim])
             # im = Image.open(os.path.join(dir_im, fls_im[iim])).convert(mode='RGB').resize(self.im_sz)
             # im.save(os.path.join(os.getcwd(), str(j + 1) + '.png'))
         print(postprocess_output)
@@ -419,6 +403,8 @@ class ModelHandler(BaseHandler):
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
                 idx1, idx2 = zip(*idx_cp)
+            elif set_type == 'service':
+                pass
             else:
                 # remove duplicate sketches
                 if filter_sketch:
@@ -447,6 +433,7 @@ class ModelHandler(BaseHandler):
         print('fls_im.size : {}'.format(len(fls_im)))
 
         fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
+
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
         # sketch files and classes
@@ -465,7 +452,7 @@ class ModelHandler(BaseHandler):
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
         te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
 
-        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
+        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='service')
         idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
         idx_te_im, idx_te_sk = self._get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
 
