@@ -227,6 +227,32 @@ path_cp
 ```
 
 ## Production
+
+### Start serving
+
+## Images embedding
+/src/mk_image_emb_npy.py 파일을 사용하여 images_embedding.npy 파일 생성
+
+
+## Make mar file
+```
+torch-model-archiver --model-name sem_pcyc --version 1.0 --model-file ./src/models.py --serialized-file ./model_best.pth --extra-files ./images_embedding.npy --handler ./ts/torch_handler/sem_pcyc_handler.py
+```
+# Option explain
+ --model-name : 모델 이름
+ --model-file : 모델 아카이브할때 필요한 클래스와 함수가 저장된 파일
+ --serialized-file : 모델의 가중치가 저장된 pth파일
+ --extra-files : 필요한 추가적인 파일, images_embedding.npy의 파일명과 경로가 handler에서 npy가져올때 사용하는 파일명과 경로가 같게 설정해야한다
+ --handler : handler file
+ 추가적인 옵션은 https://github.com/pytorch/serve/blob/master/model-archiver/README.md 참고
+
+## Torchserve start
+```
+torchserve --ts-config ./ts/config.properties --foreground --start --model-store ./model-store --models sem_pcyc=sem_pcyc.mar
+```
+옵션은 https://github.com/pytorch/serve 참고
+ 
+
 ### pytorch serving article
 - https://pytorch.org/serve/index.html
 - https://towardsdatascience.com/how-to-deploy-your-pytorch-models-with-torchserve-2452163871d3
