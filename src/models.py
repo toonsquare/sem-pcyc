@@ -13,6 +13,9 @@ from torchvision import models
 import torch.nn.functional as F
 import torch.utils.data as data
 
+# 이미지 처리
+from PIL import Image
+
 # user defined
 
 
