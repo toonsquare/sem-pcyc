@@ -1,5 +1,5 @@
 import numpy as np
-from models_paul import DataGeneratorImage, SEM_PCYC
+from models import DataGeneratorImage, SEM_PCYC
 import torchvision.transforms as transforms
 import os
 import glob
@@ -7,6 +7,7 @@ import random
 import itertools
 import torch
 from torch.utils.data import DataLoader
+
 class MakeNPY():
     def __init__(self):
         self.path_dataset = '/home/ubuntu/sem_pcyc/dataset'
@@ -36,6 +37,8 @@ class MakeNPY():
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
                 idx1, idx2 = zip(*idx_cp)
+            elif set_type == 'service':
+                pass
             else:
                 # remove duplicate sketches
                 if filter_sketch:
@@ -75,7 +78,7 @@ class MakeNPY():
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
         te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
 
-        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
+        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='service')
         idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
         idx_te_im, idx_te_sk = self._get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
 
