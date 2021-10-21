@@ -226,9 +226,9 @@ path_cp
 49.50.175.252 nipa
 ```
 
-## Production
 
-### Start serving
+
+# Start serving
 
 ## Images embedding
 /src/mk_image_emb_npy.py 파일을 사용하여 images_embedding.npy 파일 생성
@@ -238,7 +238,7 @@ path_cp
 ```
 torch-model-archiver --model-name sem_pcyc --version 1.0 --model-file ./src/models.py --serialized-file ./model_best.pth --extra-files ./images_embedding.npy --handler ./ts/torch_handler/sem_pcyc_handler.py
 ```
-# Option explain
+### Option explain
  --model-name : 모델 이름
  --model-file : 모델 아카이브할때 필요한 클래스와 함수가 저장된 파일
  --serialized-file : 모델의 가중치가 저장된 pth파일
@@ -252,6 +252,7 @@ torchserve --ts-config ./ts/config.properties --foreground --start --model-store
 ```
 옵션은 https://github.com/pytorch/serve 참고
  
+## Production
 
 ### pytorch serving article
 - https://pytorch.org/serve/index.html
