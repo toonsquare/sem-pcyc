@@ -20,8 +20,8 @@ class MakeNPY():
         self.sketch_sd = ''
         self.splits = self._load_files_tuberlin_zeroshot(root_path=self.root_path, split_eccv_2018=False,
                                                        photo_dir=self.photo_dir, sketch_dir=self.sketch_dir, photo_sd=self.photo_sd,
-                                                       sketch_sd=self.sketch_sd,dataset='intersection')
-        self.sem_pcyc_model =self.SEM_PCYC()
+                                                       sketch_sd=self.sketch_sd,dataset=self.dataset)
+        self.sem_pcyc_model = self.SEM_PCYC()
     def _get_coarse_grained_samples(self,classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
         idx_im_ret = np.array([], dtype=np.int)
         idx_sk_ret = np.array([], dtype=np.int)
@@ -127,7 +127,7 @@ class MakeNPY():
         for i, (im, cls_im) in enumerate(test_loader_image):
             if torch.cuda.is_available():
                 im = im.cuda()
-            print("Present image number :", i)
+            # print("Present image number :", i)
 
             im_em = self.sem_pcyc_model.get_image_embeddings(im)
 
@@ -208,6 +208,7 @@ def main() :
     print("\n")
     print("--------------START Saving--------------")
     np.save("/home/ubuntu/projects/images_embedding.npy", acc_im_em)
+    print("--------------END Saving--------------")
 
 if __name__ == "__main__":
     main()
