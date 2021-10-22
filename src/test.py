@@ -129,13 +129,13 @@ def main():
     splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
     print('----te_clss_sk----')
     print(splits['te_clss_sk'])
-    splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
-    print('----te_fls_im----')
-    print(splits['te_fls_im'])
-    splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
-    print('----te_clss_im----')
-    print(splits['te_clss_im'])
-
+    # splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
+    # print('----te_fls_im----')
+    # print(splits['te_fls_im'])
+    # splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
+    # print('----te_clss_im----')
+    # print(splits['te_clss_im'])
+    print('size splits[te_fls_im] : {}'.format(len(splits['te_fls_im'])))
     if args.gzs_sbir > 0:
         perc = 0.2
         _, idx_sk = np.unique(splits['tr_fls_sk'], return_index=True)

@@ -223,7 +223,8 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     np.random.seed(0)
     tr_classes = np.random.choice(classes, int(0.88 * len(classes)), replace=False)
     va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
-    te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+    # te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+    te_classes =  np.random.choice(classes, int(1 * len(classes)), replace=False)
 
     idx_tr_im, idx_tr_sk = get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
     idx_va_im, idx_va_sk = get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
