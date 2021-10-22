@@ -280,7 +280,7 @@ class ModelHandler(BaseHandler):
             print('*Cuda exists*...', end='')
             model = model.cuda()
         print('Done')
-        print('tr_clss_len:', splits["tr_clss_im"].shape)
+        print('te_clss_len:', splits["te_clss_im"].shape)
 
         model.load_state_dict(state_dict)
         model.eval()
@@ -403,8 +403,8 @@ class ModelHandler(BaseHandler):
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
                 idx1, idx2 = zip(*idx_cp)
-            elif set_type == 'service':
-                pass
+            # elif set_type == 'service':
+            #     pass
             else:
                 # remove duplicate sketches
                 if filter_sketch:

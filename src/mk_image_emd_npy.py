@@ -37,8 +37,8 @@ class MakeNPY():
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
                 idx1, idx2 = zip(*idx_cp)
-            elif set_type == 'service':
-                pass
+            # elif set_type == 'service':
+            #     pass
             else:
                 # remove duplicate sketches
                 if filter_sketch:
@@ -54,6 +54,7 @@ class MakeNPY():
                                       photo_sd='', sketch_sd='', dataset=''):
         path_im = os.path.join(root_path, photo_dir, photo_sd)
         path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
+
 
         # image files and classes
         if dataset == '':
@@ -207,7 +208,7 @@ def main() :
     print("--------------END Embedding--------------")
     print("\n")
     print("--------------START Saving--------------")
-    np.save("/home/ubuntu/projects/images_embedding.npy", acc_im_em)
+    np.save("/home/ubuntu/projects_paul/images_embedding.npy", acc_im_em)
     print("--------------END Saving--------------")
 
 if __name__ == "__main__":
