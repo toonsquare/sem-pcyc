@@ -349,7 +349,7 @@ class ModelHandler(BaseHandler):
 
         postprocess_output = []
 
-        ind_sk = np.argsort(inference_output)[0][:20]
+        ind_sk = np.argsort(-inference_output)[0][:20]
         print('ind_sk shape {}'.format(ind_sk.shape))
         for j, iim in enumerate(ind_sk):
             print('iim : {}'.format(iim))
@@ -433,7 +433,6 @@ class ModelHandler(BaseHandler):
         print('fls_im.size : {}'.format(len(fls_im)))
 
         fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
-
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
         # sketch files and classes
