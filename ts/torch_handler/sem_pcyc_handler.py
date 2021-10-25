@@ -47,8 +47,17 @@ class ModelHandler(BaseHandler):
         self.photo_sd = ''
         self.sketch_sd = ''
         self.sketch_dir = None
-        self.splits_test =[]
+        self.splits_test = []
         self.acc_im_em = None
+        self.acc_im_em_npy_saved = None
+        self.npy_path = '/home/model-server/npy'
+        self.acc_im_em = self.np_load(os.path.join(self.npy_path, "./acc_im_em.npy"))
+
+    def np_load(self, npy_path):
+        images_emd = np.load(npy_path)
+        print('success load acc_im_em.npy~!!!!!')
+        self.acc_im_em_npy_saved = True
+        return images_emd
 
     def initialize(self, context):
         """
@@ -202,9 +211,9 @@ class ModelHandler(BaseHandler):
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-                                                                  photo_dir=photo_dir, sketch_dir=sketch_dir,
-                                                                  photo_sd=photo_sd,
-                                                                  sketch_sd=sketch_sd)
+                                                    photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                    photo_sd=photo_sd,
+                                                    sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
         splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
         print('----te_fls_sk----')
@@ -289,20 +298,25 @@ class ModelHandler(BaseHandler):
         preprocessed_data = data[0].get("data")
         sketch_embedding = ''
         if preprocessed_data is None:
+            print('data[0].get("data")')
             preprocessed_data = data[0].get("body")
+            if preprocessed_data is None:
+                preprocessed_data = data[0].get("file")
             preprocessed_data = Image.open(BytesIO(preprocessed_data))
-            preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+            # preprocessed_data = preprocessed_data.convert(mode='RGB')
+            # preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+            # preprocessed_data.save(os.path.join(self.npy_path, 'test_invert.png'))
             transform_image = self.transform_sketch(preprocessed_data)
+            preprocessed_data.save(os.path.join(self.npy_path, 'test.png'))
             print('transform_image shape : {}'.format(transform_image.shape))
             if torch.cuda.is_available():
                 transform_image = transform_image.cuda()
-                transform_image = transform_image.resize(1, 3, self.sk_sz, self.sk_sz)
-                sketch_embedding = self.model.get_sketch_embeddings(transform_image)
             else:
                 print('cuda is not available for image transforming')
 
+            transform_image = transform_image.resize(1, 3, self.sk_sz, self.sk_sz)
+            sketch_embedding = self.model.get_sketch_embeddings(transform_image)
             print('sketch_embedding shape : {}'.format(sketch_embedding.shape))
-
         else:
             print('input data error')
         return sketch_embedding
@@ -331,6 +345,13 @@ class ModelHandler(BaseHandler):
                     acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)
                     acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)
             self.acc_im_em = acc_im_em
+
+        if self.acc_im_em_npy_saved is None:
+            npy_path = os.path.join(self.npy_path, 'acc_im_em.npy');
+            print('npy_path : {}'.format(npy_path))
+            np.save(npy_path, acc_im_em)
+
+            self.acc_im_em_npy_saved = True
 
         model_input = model_input.cpu().data.numpy()
         # acc_sk_em = np.concatenate(([], test_input_em), axis=0)
