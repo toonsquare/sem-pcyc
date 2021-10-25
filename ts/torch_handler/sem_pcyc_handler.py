@@ -210,20 +210,7 @@ class ModelHandler(BaseHandler):
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
                                                                   photo_dir=photo_dir, sketch_dir=sketch_dir,
                                                                   photo_sd=photo_sd,
-                                                                  sketch_sd=sketch_sd)
-        # Combine the valid and test set into test set
-        splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
-        print('----te_fls_sk----')
-        # print(splits['te_fls_sk'])
-        splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
-        print('----te_clss_sk----')
-        # print(splits['te_clss_sk'])
-        splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
-        print('----te_fls_im----')
-        # print(splits['te_fls_im'])
-        splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
-        print('----te_clss_im----')
-        # print(splits['te_clss_im'])
+                                                                  sketch_sd=sketch_sd,dataset="intersection")
 
         print('te_fls_im type.{}'.format(type(splits['te_fls_im'])))
         self.splits_test = splits['te_fls_im']
@@ -342,14 +329,14 @@ class ModelHandler(BaseHandler):
         """
         # Take output from network and post-process to desired format
         dir_im = os.path.join(self.root_path, self.photo_dir, self.photo_sd)
-        fls_im = np.asarray(self.splits_train)
+        fls_im = np.asarray(self.splits_test)
         # print(fls_im)
         print(type(fls_im))
         print('fls_im size : {}'.format(len(fls_im)))
 
         postprocess_output = []
 
-        ind_sk = np.argsort(-inference_output)[0][:20]
+        ind_sk = np.argsort(-inference_output)[0][:10]
         print('ind_sk shape {}'.format(ind_sk.shape))
         for j, iim in enumerate(ind_sk):
             print('iim : {}'.format(iim))
@@ -449,7 +436,8 @@ class ModelHandler(BaseHandler):
         np.random.seed(0)
         tr_classes = np.random.choice(classes, int(0.88 * len(classes)), replace=False)
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
-        te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        # te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        te_classes = np.random.choice(classes, int(1 * len(classes)), replace=False)
 
         idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='service')
         idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')

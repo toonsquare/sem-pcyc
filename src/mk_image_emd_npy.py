@@ -21,7 +21,7 @@ class MakeNPY():
         self.splits = self._load_files_tuberlin_zeroshot(root_path=self.root_path, split_eccv_2018=False,
                                                        photo_dir=self.photo_dir, sketch_dir=self.sketch_dir, photo_sd=self.photo_sd,
                                                        sketch_sd=self.sketch_sd,dataset=self.dataset)
-        self.sem_pcyc_model = self.SEM_PCYC()
+        self.sem_pcyc_model = self.SEM_PCYC_params()
     def _get_coarse_grained_samples(self,classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
         idx_im_ret = np.array([], dtype=np.int)
         idx_sk_ret = np.array([], dtype=np.int)
@@ -77,9 +77,10 @@ class MakeNPY():
         np.random.seed(0)
         tr_classes = np.random.choice(classes, int(0.88 * len(classes)), replace=False)
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
-        te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        # te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        te_classes = np.random.choice(classes, int(1 * len(classes)), replace=False)
 
-        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='service')
+        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
         idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
         idx_te_im, idx_te_sk = self._get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
 
@@ -105,12 +106,10 @@ class MakeNPY():
 
     def images_preprocessing(self):
         image_test = self.splits
-
-
         # 클래스명이 필요하기 때문에 image_test라는 튜플의 첫 번째 인덱스를 all_clss_im으로 저장
         # str_sim이 필요가 없지만 DataGeneratorImage 클래스에서는 clss_im이 사용되므로 일단 구해놓기
-        all_class_image = image_test["tr_clss_im"]
-        all_files_image = image_test["tr_fls_im"]
+        all_class_image = image_test["te_clss_im"]
+        all_files_image = image_test["te_fls_im"]
 
         print(all_files_image)
         transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
@@ -145,7 +144,7 @@ class MakeNPY():
         texts = sorted(list(set(texts)))
         d = {l: i for i, l in enumerate(texts)}
         return d
-    def SEM_PCYC(self):
+    def SEM_PCYC_params(self):
         path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
         path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
         dict_clss = self._create_dict_texts(self.splits['tr_clss_im'])
@@ -194,12 +193,17 @@ class MakeNPY():
 
 
         sem_pcyc_model = SEM_PCYC(params_model)
-        path_pth ="/home/ubuntu/sem_pcyc/aux/CheckPoints/intersection/word2vec-google-news/64/model_best.pth"
+        path_pth ="/home/ubuntu/model_best.pth"
         device = torch.device("cuda")
         checkpoint = torch.load(path_pth,map_location="cuda:0")
+        list_ck=list(checkpoint['state_dict'])
+        # for i ,state_name in enumerate(list_ck) :
+        #     checkpoint_load=checkpoint["state_dict"]
+        #     print("state_dict :{}, state_shape : {}".format(list_ck[:][i],checkpoint_load[state_name].shape))
         sem_pcyc_model.load_state_dict(checkpoint['state_dict'])
         sem_pcyc_model.to(device)
         sem_pcyc_model.eval()
+
         return sem_pcyc_model
 
 def main() :
