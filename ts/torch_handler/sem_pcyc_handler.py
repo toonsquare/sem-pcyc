@@ -50,8 +50,11 @@ class ModelHandler(BaseHandler):
         self.splits_test = []
         self.acc_im_em = None
         self.acc_im_em_npy_saved = None
+        self.max_prediction_size = 30
         self.npy_path = '/home/model-server/npy'
-        self.acc_im_em = self.np_load(os.path.join(self.npy_path, "./acc_im_em.npy"))
+        npy_full_path = os.path.join(self.npy_path, "acc_im_em.npy")
+        if os.path.isfile(npy_full_path):
+            self.acc_im_em = self.np_load(npy_full_path)
 
     def np_load(self, npy_path):
         images_emd = np.load(npy_path)
@@ -303,11 +306,10 @@ class ModelHandler(BaseHandler):
             if preprocessed_data is None:
                 preprocessed_data = data[0].get("file")
             preprocessed_data = Image.open(BytesIO(preprocessed_data))
-            # preprocessed_data = preprocessed_data.convert(mode='RGB')
-            # preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+            preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
             # preprocessed_data.save(os.path.join(self.npy_path, 'test_invert.png'))
             transform_image = self.transform_sketch(preprocessed_data)
-            preprocessed_data.save(os.path.join(self.npy_path, 'test.png'))
+            # preprocessed_data.save(os.path.join(self.npy_path, 'test.png'))
             print('transform_image shape : {}'.format(transform_image.shape))
             if torch.cuda.is_available():
                 transform_image = transform_image.cuda()
@@ -349,7 +351,7 @@ class ModelHandler(BaseHandler):
         if self.acc_im_em_npy_saved is None:
             npy_path = os.path.join(self.npy_path, 'acc_im_em.npy');
             print('npy_path : {}'.format(npy_path))
-            np.save(npy_path, acc_im_em)
+            # np.save(npy_path, acc_im_em)
 
             self.acc_im_em_npy_saved = True
 
@@ -384,7 +386,7 @@ class ModelHandler(BaseHandler):
 
         postprocess_output = []
 
-        ind_sk = np.argsort(-inference_output)[:10][0][:10]
+        ind_sk = np.argsort(-inference_output)[:10][0][:self.max_prediction_size]
         print('ind_sk shape {}'.format(ind_sk.shape))
         for j, iim in enumerate(ind_sk):
             print('iim : {}'.format(iim))
