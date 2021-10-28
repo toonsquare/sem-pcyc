@@ -268,6 +268,7 @@ docker run --rm -it --gpus all -p 8080:8080 -p 8081:8081 --name mar -v $(pwd)/mo
 
 ### reference docs
 - https://pytorch.org/serve/management_api.html
+- https://pytorch.org/serve/server.html
 
 모델 archive(version 2.0)
 ```
