@@ -264,6 +264,44 @@ Docker 로 torchserver 실행방법
 docker run --rm -it --gpus all -p 8080:8080 -p 8081:8081 --name mar -v $(pwd)/model-store:/home/model-server/model-store -v $(pwd)/examples:/home/model-server/examples  pytorch/torchserve:latest torchserve --start --model-store /home/model-server/model-store --models densenet161=densenet161.mar
 ```
 
+## Version 관리
+
+### reference docs
+- https://pytorch.org/serve/management_api.html
+- https://pytorch.org/serve/server.html
+
+모델 archive(version 2.0)
+```
+torch-model-archiver --model-name sem_pcyc --version 2.0 --model-file ./src/models.py --serialized-file ./model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py
+```
+model register
+```
+curl -X POST "http://localhost:8081/models?url=/model-store/sem_pcyc.mar"
+```
+모델 확인
+```
+curl http://localhost:8081/models/sem_pcyc/2.0
+```
+default 모델 변경(version 2.0을 default 모델로 변경)
+```
+curl -v -X PUT http://localhost:8081/models/sem_pcyc/2.0/set-default
+```
+모델 등록 취소(version 1.0을 등록 취소할 경우)
+```
+curl -X DELETE http://localhost:8081/models/sem_pcyc/
+```
+Request 하기
+```
+curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+```
+
+log사용하여 시작하기
+
+torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에 가장 최근 로그를 불러올 수 있다.
+```
+torchserve  --foreground --start --model-store ./model-store --log-config ./logs/config/20211028083058376-shutdown.cfg
+```
+
 ## Author
 
 * [Anjan Dutta](https://sites.google.com/site/2adutta/) ([@AnjanDutta](https://github.com/AnjanDutta))
