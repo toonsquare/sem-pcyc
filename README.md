@@ -295,9 +295,10 @@ Request 하기
 curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
 ```
 
+
 log사용하여 시작하기
 
-torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에 가장 최근 로그를 불러올 수 있다.
+torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에 가장 최근 로그를 불러올 수 있다.(단, 관련 mar 파일들이 모두 model-store에 있어야한다.)
 ```
 torchserve  --foreground --start --model-store ./model-store --log-config ./logs/config/20211028083058376-shutdown.cfg
 ```
