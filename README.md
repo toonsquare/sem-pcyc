@@ -280,8 +280,8 @@ Ex) 최초 버전 : sem_pcyc.mar | 그후에 추가하고 싶은 버전 : sem_pc
 ```
 torchserve --log-config shutdown.cfg --foreground --start --model-store ./model-store 
 ```
-자세한 실행 코드는 아래 링크 참고
-https://pytorch.org/serve/management_api.html?highlight=version
+
+자세한 실행 코드는 아래 코드 참고
 
 모델 archive(version 2.0)
 ```
