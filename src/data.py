@@ -24,7 +24,8 @@ class DataGeneratorPaired(data.Dataset):
         self.transforms_image = transforms_image
 
     def __getitem__(self, item):
-        sk = ImageOps.invert(Image.open(os.path.join(self.root, self.sketch_dir, self.sketch_sd, self.fls_sk[item]))).\
+        image = Image.open(os.path.join(self.root, self.sketch_dir, self.sketch_sd, self.fls_sk[item]))
+        sk = ImageOps.invert(image.convert('RGB')).\
             convert(mode='RGB')
         im = Image.open(os.path.join(self.root, self.photo_dir, self.photo_sd, self.fls_im[item])).convert(mode='RGB')
         cls = self.clss[item]
