@@ -116,7 +116,10 @@ def get_coarse_grained_samples(classes, fls_im, fls_sk, set_type='train', filter
             if len(idx_cp) > 100000:
                 random.seed(i)
                 idx_cp = random.sample(idx_cp, 100000)
-            idx1, idx2 = zip(*idx_cp)
+            try:
+                idx1, idx2 = zip(*idx_cp)
+            except:
+                print()
         else:
             # remove duplicate sketches
             if filter_sketch:
@@ -212,7 +215,7 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
     # sketch files and classes
-    fls_sk = glob.glob(os.path.join(path_sk, '*', '*.png'))
+    fls_sk = glob.glob(os.path.join(path_sk, '*', '*'))
     fls_sk = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_sk])
     clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
 

@@ -78,7 +78,7 @@ def main():
         fi = os.path.join(path_aux, 'Semantic', args.dataset, f + '.npy')
         files_semantic_labels.append(fi)
         sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
-
+    print('Sem dim : {}'.format(sem_dim))
     print('Checkpoint path: {}'.format(path_cp))
     print('Logger path: {}'.format(path_log))
     print('Result path: {}'.format(path_results))
