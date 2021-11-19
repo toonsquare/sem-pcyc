@@ -186,8 +186,12 @@ class SEM_PCYC(nn.Module):
         sem_temp = []
         for f in params_model['files_semantic_labels']:
             sem_temp.append(np.load(f, allow_pickle=True).item())
-        self.sem =[dict(sem_temp[0], **sem_temp[1])]
-        print(self.sem)
+        try:
+            self.sem =[dict(sem_temp[0], **sem_temp[1])]
+            print(self.sem)
+        except Exception as e:
+            print('this is may be production mode')
+            print(e)
         self.dict_clss = params_model['dict_clss']
 
         print('Initializing trainable models...', end='')
@@ -208,7 +212,7 @@ class SEM_PCYC(nn.Module):
         # Image discriminator
         self.disc_im = Discriminator(in_dim=512, noise=True, use_batchnorm=True)
         # Semantic autoencoder
-        self.aut_enc = AutoEncoder(dim=300, hid_dim=self.dim_out, nlayer=1)
+        self.aut_enc = AutoEncoder(dim=self.sem_dim, hid_dim=self.dim_out, nlayer=1)
 
         # Classifiers
         self.classifier_sk = nn.Linear(512, self.num_clss, bias=False)
@@ -391,7 +395,7 @@ class SEM_PCYC(nn.Module):
             num_cls = torch.from_numpy(numeric_classes(cl, self.dict_clss)).cuda()
 
             # Get the semantic embeddings for cl
-            se = np.zeros((len(cl), 300), dtype=np.float32)
+            se = np.zeros((len(cl), self.sem_dim), dtype=np.float32)
             for i, c in enumerate(cl):
                 se_c = np.array([], dtype=np.float32)
                 for s in self.sem:
