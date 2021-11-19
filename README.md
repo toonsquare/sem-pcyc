@@ -264,6 +264,61 @@ Docker 로 torchserver 실행방법
 docker run --rm -it --gpus all -p 8080:8080 -p 8081:8081 --name mar -v $(pwd)/model-store:/home/model-server/model-store -v $(pwd)/examples:/home/model-server/examples  pytorch/torchserve:latest torchserve --start --model-store /home/model-server/model-store --models densenet161=densenet161.mar
 ```
 
+## Version 관리
+###Torchserve를 신규 모델 등록 및 버전 관리 
+1.	신규 모델 등록
+다중 모델 등록 가능, 필요에 따라 동시에 사용 할 수 있다.
+-	모델 등록 시 모델 명을 따로 넣지 않을 경우 mar 파일명이 model 명으로 등록된다.
+2.	버전 관리
+-	버전은 mar 파일을 만들 때 파일 이름(--model-name 옵션)에 명시
+-	최초 버전은 아무것도 표기하지 않는다.
+Ex) 최초 버전 : sem_pcyc.mar | 그후에 추가하고 싶은 버전 : sem_pcyc_1.0.1, sem_pcyc_2.0.3
+-	새로운 버전 등록 시 꼭 모델 명을 넣어야 새로운 모델이 아닌 기존 모델에 다른 버전이 등록 된다. 모델 명을 입력하지 않을 경우 mar 파일에서 모델명을 가져오기 때문에 이전의 등록된 모델명과 달라 새로운 모델로 등록된다.
+-	Mar 파일은 삭제하지 않는다.(중요!!)
+3.	Dokcer shutdown 발생 시 대응책
+-	만약 docker가 내려갔다 다시 켜 질 경우 가장 최근 로그(/logs/config/shutdown.cfg)를 사용하여 torchserve를 시작
+```
+torchserve --log-config shutdown.cfg --foreground --start --model-store ./model-store 
+```
+
+자세한 실행 코드는 아래 코드 참고
+
+모델 archive(version 2.0)
+```
+torch-model-archiver --model-name sem_pcyc --version 2.0 --model-file ./src/models.py --serialized-file ./model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py
+```
+model register
+```
+curl -X POST "http://localhost:8081/models?url=/model-store/sem_pcyc.mar"
+```
+모델 확인
+```
+curl http://localhost:8081/models/sem_pcyc/2.0
+```
+default 모델 변경(version 2.0을 default 모델로 변경)
+```
+curl -v -X PUT http://localhost:8081/models/sem_pcyc/2.0/set-default
+```
+모델 등록 취소(version 1.0을 등록 취소할 경우)
+```
+curl -X DELETE http://localhost:8081/models/sem_pcyc/
+```
+Request 하기
+```
+curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+```
+
+
+log사용하여 시작하기
+
+torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에 가장 최근 로그를 불러올 수 있다.(단, 관련 mar 파일들이 모두 model-store에 있어야한다.)
+```
+torchserve  --foreground --start --model-store ./model-store --log-config ./logs/config/20211028083058376-shutdown.cfg
+```
+### reference docs
+- https://pytorch.org/serve/management_api.html
+- https://pytorch.org/serve/server.html
+
 ## Author
 
 * [Anjan Dutta](https://sites.google.com/site/2adutta/) ([@AnjanDutta](https://github.com/AnjanDutta))
