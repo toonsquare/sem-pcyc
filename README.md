@@ -314,6 +314,17 @@ torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에
 ```
 torchserve  --foreground --start --model-store ./model-store --log-config ./logs/config/20211028083058376-shutdown.cfg
 ```
+
+## class 추가시 word embedding하기
+### word2vec.npy 생성하기
+
+data set에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.
+src/newclass_word2vec.py에 있는 create_wordemb()함수를 사용하면,
+해당 클래스들의 embedding 값들을 반환해준다.
+
+다시 말해, intersection의 클래스가 220개이고 그에 맞는 word embedding도 220개 이어야 한다는 것이다.
+
+
 ### reference docs
 - https://pytorch.org/serve/management_api.html
 - https://pytorch.org/serve/server.html
