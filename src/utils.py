@@ -13,7 +13,7 @@ import multiprocessing
 import configparser as cp
 from joblib import Parallel, delayed
 from sklearn.metrics import average_precision_score
-
+from sklearn.utils.class_weight import compute_class_weight
 import torch
 
 np.random.seed(0)
@@ -130,14 +130,20 @@ def get_coarse_grained_samples(classes, fls_im, fls_sk, set_type='train', filter
 
 
 def load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=False, photo_dir='photo',
-                                sketch_dir='sketch', photo_sd='tx_000000000000', sketch_sd='tx_000000000000'):
+                                sketch_dir='sketch', photo_sd='tx_000000000000', sketch_sd='tx_000000000000',
+                                dataset=''):
     # paths of sketch and image
     path_im = os.path.join(root_path, photo_dir, photo_sd)
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
     # all the image and sketch files together with classes and core names
     fls_sk = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_sk, '*/*.png'))])
-    fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.jpg'))])
+    if dataset == '':
+        fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*'))])
+    else:
+        fls_im = np.array(['/'.join(f.split('/')[-2:]) for f in glob.glob(os.path.join(path_im, '*/*.base64'))])
+    print('load_files_sketchy_zeroshot-----------fls_im.size--------------')
+    print(len(fls_im))
 
     # classes for image and sketch
     clss_sk = np.array([f.split('/')[0] for f in fls_sk])
@@ -189,13 +195,19 @@ def load_files_sketchy_zeroshot(root_path, split_eccv_2018=False, filter_sketch=
     return splits
 
 
-def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd=''):
+def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sketches', photo_sd='', sketch_sd='',
+                                 dataset=''):
 
     path_im = os.path.join(root_path, photo_dir, photo_sd)
     path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
     # image files and classes
-    fls_im = glob.glob(os.path.join(path_im, '*', '*.jpg'))
+    if dataset == '':
+        fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+    else:
+        fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+    print('fls_im.size : {}'.format(len(fls_im)))
+
     fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
     clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
@@ -291,3 +303,31 @@ def clean_folder(folder):
                 shutil.rmtree(p)
         except Exception as e:
             print(e)
+
+def class_weights(class_data) :
+
+    clss_w= compute_class_weight(class_weight='balanced',classes=np.unique(class_data),y=class_data)
+
+    return clss_w
+
+def get_synonym():
+    syn = dict()
+    syn['axe'] = 'hatchet'
+    syn['bear_animal'] = 'bear'
+    syn['beer_mug'] = 'stein'
+    syn['bottle_opener'] = 'opener'
+    syn['computer_monitor'] = 'monitor'
+    syn['crane_machine'] = 'crane'
+    syn['head_phones'] = 'headphones'
+    syn['hot_dog'] = 'hotdog'
+    syn['mouse_animal'] = 'rat'
+    syn['paper_clip'] = 'paperclip'
+    syn['power_outlet'] = 'socket'
+    syn['race_car'] = 'racecar'
+    syn['sponge_bob'] = 'spongebob'
+    syn['wrist_watch'] = 'watch'
+
+    return syn
+
+def accuracy() :
+    pass

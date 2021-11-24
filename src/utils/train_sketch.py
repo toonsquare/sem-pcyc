@@ -24,6 +24,7 @@ from data import DataGeneratorSketch
 from models import VGGNetFeats, ResNet50Feats, SEResNet50Feats
 from logger import AverageMeter, Logger
 
+device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
 
 def main():
 
@@ -40,8 +41,8 @@ def main():
 
     # Optimization Options
     parser.add_argument('--batch-size', default=64, type=int, help='batch size')
-    parser.add_argument('--ngpu', type=int, default=1, help='0 = CPU, 1 = CUDA, 1 < DataParallel')
-    parser.add_argument('--multi-gpu', action='store_true', default=False, help='Enables Multiple GPU')
+    parser.add_argument('--ngpu', type=int, default=2, help='0 = CPU, 1 = CUDA, 1 < DataParallel')
+    parser.add_argument('--multi-gpu', action='store_true', default=True, help='Enables Multiple GPU')
     parser.add_argument('--early-stop', type=int, default=10, help='Early stopping epochs.')
     parser.add_argument('--epochs', type=int, default=100, metavar='N', help='Number of epochs to train (default: 100)')
     parser.add_argument('--lr', type=lambda x: utils.restricted_float(x, [1e-5, 0.5]), default=0.01, metavar='LR', help='Initial learning rate [1e-5, 5e-4] (default: 1e-4)')
@@ -232,6 +233,7 @@ def train(train_loader, model, criterion, optimizer, epoch, logger=None):
     for i, (im, cl) in enumerate(train_loader):
         if torch.cuda.is_available():
             im, cl = im.cuda(), cl.cuda()
+
         op = model(im)
         loss = criterion(op, cl)
         acc = utils.accuracy(op.data, cl.data, topk=(1,))

@@ -26,6 +26,8 @@ np.random.seed(0)
 
 
 def main():
+    gc.collect()
+    torch.cuda.empty_cache()
 
     # Parse options
     args = Options().parse()
@@ -56,18 +58,31 @@ def main():
         str_aux = os.path.join(str_aux, 'generalized')
     args.semantic_models = sorted(args.semantic_models)
     model_name = '+'.join(args.semantic_models)
+    print('model_name : ' + model_name)
+    # 데이터 셋 경로
     root_path = os.path.join(path_dataset, args.dataset)
+    print('root_path : ' + root_path)
+    # 스케치 모델 경로
     path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
+    print('path_sketch_model : ' + path_sketch_model)
+    # 썸네일 모델 경로
     path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image')
+    print('path_image_model : ' + path_image_model)
+    # 체크포인트 모델 경로 이건뭐지?
     path_cp = os.path.join(path_aux, 'CheckPoints', args.dataset, str_aux, model_name, str(args.dim_out))
+    print('path_cp : ' + path_cp)
+    # 결과 저장 경로
     path_results = os.path.join(path_aux, 'Results', args.dataset, str_aux, model_name, str(args.dim_out))
     files_semantic_labels = []
     sem_dim = 0
+    # 시멘틱 모델 벡터 값 가져오기
     for f in args.semantic_models:
         fi = os.path.join(path_aux, 'Semantic', args.dataset, f + '.npy')
+        print('fi : '+ fi)
         files_semantic_labels.append(fi)
         sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
 
+    print('sem_dim : ' + str(sem_dim))
     print('Checkpoint path: {}'.format(path_cp))
     print('Result path: {}'.format(path_results))
 
@@ -97,14 +112,29 @@ def main():
         sketch_sd = ''
         splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, sketch_dir=sketch_dir,
                                                     photo_sd=photo_sd, sketch_sd=sketch_sd)
+    elif args.dataset == 'intersection':
+        photo_dir = 'images'
+        sketch_dir = 'sketches'
+        photo_sd = ''
+        sketch_sd = ''
+        splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                    photo_sd=photo_sd, sketch_sd=sketch_sd)
     else:
         raise Exception('Wrong dataset.')
 
     # Combine the valid and test set into test set
     splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
+    print('----te_fls_sk----')
+    print(splits['te_fls_sk'])
     splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
+    print('----te_clss_sk----')
+    print(splits['te_clss_sk'])
     splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
+    print('----te_fls_im----')
+    print(splits['te_fls_im'])
     splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
+    print('----te_clss_im----')
+    print(splits['te_clss_im'])
 
     if args.gzs_sbir > 0:
         perc = 0.2
