@@ -21,7 +21,7 @@ import torch.backends.cudnn as cudnn
 # user defined
 import utils
 from data import DataGeneratorImage
-from models import VGGNetFeats, ResNet50Feats, SEResNet50Feats
+from models import VGGNetFeats#, ResNet50Feats, SEResNet50Feats
 from logger import Logger, AverageMeter
 
 device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
@@ -36,7 +36,7 @@ def main():
     # Optional argument
     parser.add_argument('--dataset', default='Sketchy', help='Name of the dataset')
     parser.add_argument('--resume', action='store_true', default=False, help='whether to resume from latest checkpoint')
-    parser.add_argument('--model', default='SEResNet50', help='Type of model')
+    parser.add_argument('--model', default='VGGNet', help='Type of model')
     parser.add_argument('--im-sz', default=224, type=int, help='image size')
 
     # Optimization Options
@@ -90,11 +90,15 @@ def main():
             photo_sd = ''
         else:
             photo_sd = 'tx_000000000000'
-        splits = utils.load_files_sketchy(root_path=root_path, photo_dir=photo_dir, photo_sd=photo_sd)
+        splits = utils.load_files_sketchy_zeroshot(root_path=root_path, photo_dir=photo_dir, photo_sd=photo_sd)
     elif args.dataset == 'TU-Berlin':
         photo_dir = 'images'
         photo_sd = ''
-        splits = utils.load_files_tuberlin(root_path=root_path, photo_dir=photo_dir, photo_sd=photo_sd)
+        splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, photo_sd=photo_sd)
+    elif args.dataset == 'intersection':
+        photo_dir = 'images'
+        photo_sd = ''
+        splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, photo_sd=photo_sd)
     elif args.dataset == 'QuickDraw':
         raise NotImplementedError
     else:
@@ -102,7 +106,14 @@ def main():
         exit()
 
     # class dictionary
-    dict_clss = utils.create_dict_texts(splits['tr_clss_im'] + splits['va_clss_im'] + splits['te_clss_im'])
+    for i in splits["tr_clss_im"] :
+        print(type(i))
+        break
+
+
+    text_splits= np.concatenate((splits['tr_clss_im'] , splits['va_clss_im'] , splits['te_clss_im']),axis=0)
+    print("text_splits sucess")
+    dict_clss = utils.create_dict_texts(text_splits)
     tr_clss = utils.numeric_classes(splits['tr_clss_im'], dict_clss)
     va_clss = utils.numeric_classes(splits['va_clss_im'], dict_clss)
     te_clss = utils.numeric_classes(splits['te_clss_im'], dict_clss)
@@ -131,7 +142,7 @@ def main():
     elif args.model == 'SEResNet50':
         model = SEResNet50Feats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
     elif args.model == 'VGGNet':
-        model = VGGNetFeats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
+        model = VGGNetFeats(pretrained=True, finetune=False)
     else:
         raise NotImplementedError
     print('Done')

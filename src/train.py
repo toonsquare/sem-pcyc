@@ -25,11 +25,10 @@ from data import DataGeneratorPaired, DataGeneratorSketch, DataGeneratorImage
 
 np.random.seed(0)
 
-# os.environ["CUDA_VISIBLE_DEVICES"]='0,1'
-device = torch.device("cuda" if torch.cuda.is_available() else "cpu") ## specify the GPU id's, GPU id's start from 0.
 
 def main():
-
+    gc.collect()
+    torch.cuda.empty_cache()
     # Parse options
     args = Options().parse()
     print('Parameters:\t' + str(args))
@@ -50,6 +49,8 @@ def main():
     ds_var = None
     if '_' in args.dataset:
         token = args.dataset.split('_')
+        print('-----token-----')
+        print(token)
         args.dataset = token[0]
         ds_var = token[1]
 
@@ -62,8 +63,14 @@ def main():
     model_name = '+'.join(args.semantic_models)
     root_path = os.path.join(path_dataset, args.dataset)
     path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
+    print('-----path_sketch_model-----')
+    print(path_sketch_model)
     path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image')
+    print('-----path_image_model-----')
+    print(path_image_model)
     path_cp = os.path.join(path_aux, 'CheckPoints', args.dataset, str_aux, model_name, str(args.dim_out))
+    print('-----path_cp-----')
+    print(path_cp)
     path_log = os.path.join(path_aux, 'LogFiles', args.dataset, str_aux, model_name, str(args.dim_out))
     path_results = os.path.join(path_aux, 'Results', args.dataset, str_aux, model_name, str(args.dim_out))
     files_semantic_labels = []
@@ -103,6 +110,13 @@ def main():
         sketch_sd = ''
         splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, sketch_dir=sketch_dir,
                                                     photo_sd=photo_sd, sketch_sd=sketch_sd)
+    elif args.dataset == 'intersection':
+        photo_dir = 'images'
+        sketch_dir = 'sketches'
+        photo_sd = ''
+        sketch_sd = ''
+        splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                    photo_sd=photo_sd, sketch_sd=sketch_sd)
     else:
         raise Exception('Wrong dataset.')
 
@@ -112,6 +126,8 @@ def main():
     splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
     splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
 
+    print('--------args.gzs_sbir-----------')
+    print(args.gzs_sbir)
     if args.gzs_sbir:
         perc = 0.2
         _, idx_sk = np.unique(splits['tr_fls_sk'], return_index=True)
@@ -198,9 +214,10 @@ def main():
     # Class dictionary
     params_model['dict_clss'] = dict_clss
 
+    print('-------------------model------------------------')
+    print(params_model)
     # Model
     sem_pcyc_model = SEM_PCYC(params_model)
-    sem_pcyc_model = nn.DataParallel(sem_pcyc_model).to(device)
 
     cudnn.benchmark = True
 
@@ -212,10 +229,10 @@ def main():
     # Check cuda
     print('Checking cuda...', end='')
     # Check if CUDA is enabled
-    # if args.ngpu > 0 & torch.cuda.is_available():
-    #     print('*Cuda exists*...', end='')
-    #     sem_pcyc_model = sem_pcyc_model.cuda()
-    # print('Done')
+    if args.ngpu > 0 & torch.cuda.is_available():
+        print('*Cuda exists*...', end='')
+        sem_pcyc_model = sem_pcyc_model.cuda()
+    print('Done')
 
     best_map = 0
     early_stop_counter = 0
@@ -225,9 +242,9 @@ def main():
         print('***Train***')
         for epoch in range(args.epochs):
 
-            sem_pcyc_model.module.scheduler_gen.step()
-            sem_pcyc_model.module.scheduler_disc.step()
-            sem_pcyc_model.module.scheduler_ae.step()
+            sem_pcyc_model.scheduler_gen.step()
+            sem_pcyc_model.scheduler_disc.step()
+            sem_pcyc_model.scheduler_ae.step()
 
             # train on training set
             losses = train(train_loader, sem_pcyc_model, epoch, args)
@@ -247,6 +264,9 @@ def main():
                 early_stop_counter = 0
                 utils.save_checkpoint({'epoch': epoch + 1, 'state_dict': sem_pcyc_model.state_dict(), 'best_map':
                     best_map}, directory=path_cp)
+                # utils.save_checkpoint({'epoch': epoch + 1, 'state_dict': sem_pcyc_model, 'best_map':
+                #     best_map, 'test':'tooning'}, directory=path_cp)
+                # utils.save_checkpoint(sem_pcyc_model, directory=path_cp)
             else:
                 if args.early_stop == early_stop_counter:
                     break

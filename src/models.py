@@ -11,11 +11,41 @@ import torch.nn as nn
 import torch.optim as optim
 from torchvision import models
 import torch.nn.functional as F
+import torch.utils.data as data
+
+# 이미지 처리
+from PIL import Image
 
 # user defined
-import utils
-from losses import GANLoss
-# import horovod.torch as hvd
+
+
+# Defines the GAN loss which uses either LSGAN or the regular GAN. When LSGAN is used, it is basically same as MSELoss,
+# but it abstracts away the need to create the target label tensor that has the same size as the input
+class GANLoss(nn.Module):
+    def __init__(self, use_lsgan=True):
+        super(GANLoss, self).__init__()
+        if use_lsgan:
+            self.loss = nn.MSELoss()
+        else:
+            self.loss = nn.BCELoss()
+
+    def get_target_tensor(self, input, target_is_real):
+        # Get soft and noisy labels
+        if target_is_real:
+            target_tensor = 0.7 + 0.3 * torch.rand(input.size(0))
+        else:
+            target_tensor = 0.3 * torch.rand(input.size(0))
+        if input.is_cuda:
+            target_tensor = target_tensor.cuda()
+        return target_tensor
+
+    def __call__(self, input, target_is_real):
+        target_tensor = self.get_target_tensor(input, target_is_real)
+        return self.loss(input.squeeze(), target_tensor)
+
+def numeric_classes(tags_classes, dict_tags):
+    num_classes = np.array([dict_tags.get(t) for t in tags_classes])
+    return num_classes
 
 
 class VGGNetFeats(nn.Module):
@@ -136,7 +166,7 @@ class AutoEncoder(nn.Module):
 class SEM_PCYC(nn.Module):
     def __init__(self, params_model):
         super(SEM_PCYC, self).__init__()
-        # self.ngpu = ngpu
+
         print('Initializing model variables...', end='')
         # Dimension of embedding
         self.dim_out = params_model['dim_out']
@@ -144,6 +174,7 @@ class SEM_PCYC(nn.Module):
         self.sem_dim = params_model['sem_dim']
         # Number of classes
         self.num_clss = params_model['num_clss']
+        print('------ num_clss : ' + str(self.num_clss))
         # Sketch model: pre-trained on ImageNet
         self.sketch_model = VGGNetFeats(pretrained=False, finetune=False)
         self.load_weight(self.sketch_model, params_model['path_sketch_model'], 'sketch')
@@ -155,10 +186,11 @@ class SEM_PCYC(nn.Module):
         for f in params_model['files_semantic_labels']:
             self.sem.append(np.load(f, allow_pickle=True).item())
         self.dict_clss = params_model['dict_clss']
+        print('--------------self.dem----------------')
+        # print(self.sem)
         print('Done')
 
         print('Initializing trainable models...', end='')
-        
         # Generators
         # Sketch to semantic generator
         self.gen_sk2se = Generator(in_dim=512, out_dim=self.dim_out, noise=False, use_dropout=True)
@@ -177,7 +209,7 @@ class SEM_PCYC(nn.Module):
         self.disc_im = Discriminator(in_dim=512, noise=True, use_batchnorm=True)
         # Semantic autoencoder
         self.aut_enc = AutoEncoder(dim=self.sem_dim, hid_dim=self.dim_out, nlayer=1)
-        
+
         # Classifiers
         self.classifier_sk = nn.Linear(512, self.num_clss, bias=False)
         self.classifier_im = nn.Linear(512, self.num_clss, bias=False)
@@ -202,7 +234,6 @@ class SEM_PCYC(nn.Module):
         self.optimizer_disc = optim.SGD(list(self.disc_se.parameters()) + list(self.disc_sk.parameters()) +
                                         list(self.disc_im.parameters()), lr=self.lr, momentum=self.momentum)
         self.optimizer_ae = optim.SGD(self.aut_enc.parameters(), lr=100 * self.lr, momentum=self.momentum)
-        
         self.scheduler_gen = optim.lr_scheduler.MultiStepLR(self.optimizer_gen, milestones=self.milestones,
                                                             gamma=self.gamma)
         self.scheduler_disc = optim.lr_scheduler.MultiStepLR(self.optimizer_disc, milestones=self.milestones,
@@ -389,3 +420,24 @@ class SEM_PCYC(nn.Module):
         im_em = self.gen_im2se(self.image_model(im))
 
         return im_em
+
+class DataGeneratorImage(data.Dataset):
+  def __init__(self, dataset, root, photo_dir, photo_sd, fls_im, clss_im, transforms=None):
+
+    self.dataset = dataset
+    self.root = root
+    self.photo_dir = photo_dir
+    self.photo_sd = photo_sd
+    self.fls_im = fls_im
+    self.clss_im = clss_im
+    self.transforms = transforms
+
+  def __getitem__(self, item):
+    im = Image.open(os.path.join(self.root, self.photo_dir, self.photo_sd, self.fls_im[item])).convert(mode='RGB')
+    cls_im = self.clss_im[item]
+    if self.transforms is not None:
+        im = self.transforms(im)
+    return im, cls_im
+
+  def __len__(self):
+      return len(self.fls_im)
