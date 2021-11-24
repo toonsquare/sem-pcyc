@@ -1,28 +1,33 @@
-import numpy as np
-from models import DataGeneratorImage, SEM_PCYC
-import torchvision.transforms as transforms
-import os
 import glob
-import random
 import itertools
+import os
+import random
+
+import numpy as np
 import torch
+import torchvision.transforms as transforms
 from torch.utils.data import DataLoader
+
+from models import DataGeneratorImage, SEM_PCYC
+
 
 class MakeNPY():
     def __init__(self):
         self.path_dataset = '/home/ubuntu/sem_pcyc/dataset'
         self.path_aux = '/home/ubuntu/sem_pcyc/aux'
         self.dataset = 'intersection'
-        self.root_path  = os.path.join(self.path_dataset, self.dataset)
+        self.root_path = os.path.join(self.path_dataset, self.dataset)
         self.photo_dir = 'images'
         self.sketch_dir = 'sketches'
         self.photo_sd = ''
         self.sketch_sd = ''
         self.splits = self._load_files_tuberlin_zeroshot(root_path=self.root_path, split_eccv_2018=False,
-                                                       photo_dir=self.photo_dir, sketch_dir=self.sketch_dir, photo_sd=self.photo_sd,
-                                                       sketch_sd=self.sketch_sd,dataset=self.dataset)
+                                                         photo_dir=self.photo_dir, sketch_dir=self.sketch_dir,
+                                                         photo_sd=self.photo_sd,
+                                                         sketch_sd=self.sketch_sd, dataset=self.dataset)
         self.sem_pcyc_model = self.SEM_PCYC_params()
-    def _get_coarse_grained_samples(self,classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
+
+    def _get_coarse_grained_samples(self, classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
         idx_im_ret = np.array([], dtype=np.int)
         idx_sk_ret = np.array([], dtype=np.int)
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
@@ -50,11 +55,10 @@ class MakeNPY():
 
         return idx_im_ret, idx_sk_ret
 
-    def _load_files_tuberlin_zeroshot( self,root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
+    def _load_files_tuberlin_zeroshot(self, root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
                                       photo_sd='', sketch_sd='', dataset=''):
         path_im = os.path.join(root_path, photo_dir, photo_sd)
         path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
-
 
         # image files and classes
         if dataset == '':
@@ -115,7 +119,8 @@ class MakeNPY():
         transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
 
         # 이미지들을 tensor화 하는 단계
-        data_test_image = DataGeneratorImage(self.dataset, self.root_path, self.photo_dir, self.photo_sd, all_files_image,
+        data_test_image = DataGeneratorImage(self.dataset, self.root_path, self.photo_dir, self.photo_sd,
+                                             all_files_image,
                                              all_class_image, transforms=transform)
 
         # tensor화된 이미지들을 load하는 단계
@@ -140,10 +145,11 @@ class MakeNPY():
 
         return acc_im_em
 
-    def _create_dict_texts(self,texts):
+    def _create_dict_texts(self, texts):
         texts = sorted(list(set(texts)))
         d = {l: i for i, l in enumerate(texts)}
         return d
+
     def SEM_PCYC_params(self):
         path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
         path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
@@ -191,12 +197,11 @@ class MakeNPY():
         # Class dictionary
         params_model['dict_clss'] = dict_clss
 
-
         sem_pcyc_model = SEM_PCYC(params_model)
-        path_pth ="/home/ubuntu/model_best.pth"
+        path_pth = "/home/ubuntu/projects_paul/src/model_best.pth"
         device = torch.device("cuda")
-        checkpoint = torch.load(path_pth,map_location="cuda:0")
-        list_ck=list(checkpoint['state_dict'])
+        checkpoint = torch.load(path_pth, map_location="cuda:0")
+        list_ck = list(checkpoint['state_dict'])
         # for i ,state_name in enumerate(list_ck) :
         #     checkpoint_load=checkpoint["state_dict"]
         #     print("state_dict :{}, state_shape : {}".format(list_ck[:][i],checkpoint_load[state_name].shape))
@@ -206,7 +211,8 @@ class MakeNPY():
 
         return sem_pcyc_model
 
-def main() :
+
+def main():
     make_npy = MakeNPY()
     acc_im_em = make_npy.images_preprocessing()
     print("--------------END Embedding--------------")
@@ -215,8 +221,6 @@ def main() :
     np.save("/home/ubuntu/projects_paul/images_embedding.npy", acc_im_em)
     print("--------------END Saving--------------")
 
+
 if __name__ == "__main__":
     main()
-
-
-

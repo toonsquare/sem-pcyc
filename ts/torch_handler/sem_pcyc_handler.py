@@ -5,21 +5,21 @@
 """
 ModelHandler defines a custom model handler.
 """
-import inspect
-import torch
-import os
-import importlib.util
 import glob
-import logging
-import numpy as np
+import importlib.util
+import inspect
 import itertools
-import torchvision.transforms as transforms
+import logging
+import os
 import random
 from io import BytesIO
-from PIL import Image, ImageOps
-from torch.utils.data import DataLoader
-from scipy.spatial.distance import cdist
 
+import numpy as np
+import torch
+import torchvision.transforms as transforms
+from PIL import Image, ImageOps
+from scipy.spatial.distance import cdist
+from torch.utils.data import DataLoader
 from ts.torch_handler.base_handler import BaseHandler
 
 logger = logging.getLogger(__name__)
@@ -47,11 +47,12 @@ class ModelHandler(BaseHandler):
         self.photo_sd = ''
         self.sketch_sd = ''
         self.sketch_dir = None
-        self.splits_test =[]
-        self.splits_train =[]
+        self.splits_test = []
+        self.splits_train = []
         self.image_emd = self.np_load(
             "./images_embedding.npy"
         )
+
     # embedding npy file load
     def np_load(self, npy_path):
         images_emd = np.load(npy_path)
@@ -208,9 +209,9 @@ class ModelHandler(BaseHandler):
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-                                                                  photo_dir=photo_dir, sketch_dir=sketch_dir,
-                                                                  photo_sd=photo_sd,
-                                                                  sketch_sd=sketch_sd,dataset="intersection")
+                                                    photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                    photo_sd=photo_sd,
+                                                    sketch_sd=sketch_sd, dataset="intersection")
 
         print('te_fls_im type.{}'.format(type(splits['te_fls_im'])))
         self.splits_test = splits['te_fls_im']
@@ -336,7 +337,7 @@ class ModelHandler(BaseHandler):
 
         postprocess_output = []
 
-        ind_sk = np.argsort(-inference_output)[0][:10]
+        ind_sk = np.argsort(-inference_output)[0][:20]
         print('ind_sk shape {}'.format(ind_sk.shape))
         for j, iim in enumerate(ind_sk):
             print('iim : {}'.format(iim))
@@ -462,4 +463,3 @@ class ModelHandler(BaseHandler):
         splits['te_clss_im'] = clss_im[idx_te_im]
 
         return splits
-

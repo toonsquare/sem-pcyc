@@ -35,7 +35,7 @@ def main():
     # Optional argument
     parser.add_argument('--dataset', default='Sketchy', help='Name of the dataset')
     parser.add_argument('--resume', action='store_true', default=False, help='whether to resume from latest checkpoint')
-    parser.add_argument('--model', default='SEResNet50', help='Type of model')
+    parser.add_argument('--model', default='VGGNet', help='Type of model')
     parser.add_argument('--im-sz', default=224, type=int, help='image size')
 
     # Optimization Options
@@ -141,7 +141,7 @@ def main():
     elif args.model == 'SEResNet50':
         model = SEResNet50Feats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
     elif args.model == 'VGGNet':
-        model = VGGNetFeats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
+        model = VGGNetFeats(pretrained=True, finetune=False)
     else:
         raise NotImplementedError
     print('Done')

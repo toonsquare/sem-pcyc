@@ -13,7 +13,7 @@ import multiprocessing
 import configparser as cp
 from joblib import Parallel, delayed
 from sklearn.metrics import average_precision_score
-
+from sklearn.utils.class_weight import compute_class_weight
 import torch
 
 np.random.seed(0)
@@ -205,7 +205,7 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     if dataset == '':
         fls_im = glob.glob(os.path.join(path_im, '*', '*'))
     else:
-        fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        fls_im = glob.glob(os.path.join(path_im, '*', '*'))
     print('fls_im.size : {}'.format(len(fls_im)))
 
     fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
@@ -303,3 +303,31 @@ def clean_folder(folder):
                 shutil.rmtree(p)
         except Exception as e:
             print(e)
+
+def class_weights(class_data) :
+
+    clss_w= compute_class_weight(class_weight='balanced',classes=np.unique(class_data),y=class_data)
+
+    return clss_w
+
+def get_synonym():
+    syn = dict()
+    syn['axe'] = 'hatchet'
+    syn['bear_animal'] = 'bear'
+    syn['beer_mug'] = 'stein'
+    syn['bottle_opener'] = 'opener'
+    syn['computer_monitor'] = 'monitor'
+    syn['crane_machine'] = 'crane'
+    syn['head_phones'] = 'headphones'
+    syn['hot_dog'] = 'hotdog'
+    syn['mouse_animal'] = 'rat'
+    syn['paper_clip'] = 'paperclip'
+    syn['power_outlet'] = 'socket'
+    syn['race_car'] = 'racecar'
+    syn['sponge_bob'] = 'spongebob'
+    syn['wrist_watch'] = 'watch'
+
+    return syn
+
+def accuracy() :
+    pass

@@ -4,7 +4,7 @@
     <option name="INTERPRETER_OPTIONS" value="" />
     <option name="PARENT_ENVS" value="true" />
     <envs>
-      <env name="CUDA_VISIBLE_DEVICES" value="1 PYTHONUNBUFFERED=1" />
+      <env name="CUDA_VISIBLE_DEVICES" value="0 PYTHONUNBUFFERED=1" />
     </envs>
     <option name="SDK_HOME" value="" />
     <option name="WORKING_DIRECTORY" value="$PROJECT_DIR$/src" />
@@ -13,7 +13,7 @@
     <option name="ADD_SOURCE_ROOTS" value="true" />
     <EXTENSION ID="PythonCoverageRunConfigurationExtension" runner="coverage.py" />
     <option name="SCRIPT_NAME" value="$PROJECT_DIR$/src/train.py" />
-    <option name="PARAMETERS" value="--dataset intersection --dim-out 64 --semantic-models word2vec-google-news --epochs 1000 --early-stop 200 --lr 0.0001 --batch-size 32 --save-image-results" />
+    <option name="PARAMETERS" value="--dataset intersection --dim-out 64 --semantic-models intersection_plus_words --epochs 1000 --early-stop 200 --lr 0.0001 --batch-size 32 --save-image-results" />
     <option name="SHOW_COMMAND_LINE" value="true" />
     <option name="EMULATE_TERMINAL" value="false" />
     <option name="MODULE_MODE" value="false" />
