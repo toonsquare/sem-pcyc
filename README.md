@@ -340,8 +340,8 @@ new_word2vec = dict(plus_words, **word2vec)
 이렇게 나온 word2vec.npy는 train시 사용되며, 해당 semantic 모델명으로 pth가 담긴 폴더가 생성된다.
 
 ### .mar 생성하기
-mar 파일을 생성하기 위해서는 2가지가 필요한데, model_best.pth와 acc_im_em.npy이다.
-acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.
+mar 파일을 생성하기 위해서는 2가지가 필요한데, model_best.pth와 acc_im_em.npy이다.  
+acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.  
 이 파일에서도 semantic_models = []에 embedding된 npy의 이름을 적어주고,
 ```
     def _load_files_tuberlin_zeroshot( self,root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
