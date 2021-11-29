@@ -323,18 +323,16 @@ torchserve  --foreground --start --model-store ./model-store --log-config ./logs
 ```
 
 ## class 추가 후 mar version update하기
-### class 추가시 word embedding하기
+1. 추가된 class word embedding하여 new_plus_words.npy 생성
+2. 추가된 dataset & new_plus_words.npy로 train하여 model_best.pth 생성
+3. mk_image_emd_npy.py를 이용하여 acc_im_em.npy 생성
+4. sem_pcyc_handler.py & acc_im_em.npy를 이용하여 sem_pcyc.mar 생성
+5. aws ssh에 필요한 파일 전송 및 모델 등록
+
 ### word2vec.npy 생성하기
-
-data set에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.  
+dataset에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.  
 src/newclass_word2vec.py에 있는 create_wordemb()함수를 사용하면,  
-추가된 클래스들의 embedding 값들을 npy로 저장하여 반환해준다.
-
-추가된 word2vec.npy를 기존의 word2vec.npy와 합친 후 하나의 npy로 만들어 train에 사용할 수 있고,  
-코드상에서 추가된 word2vec.npy와 기존의 word2vec.npy를 합쳐서 train에서 사용할 수 있다. 
-```
-new_word2vec = dict(plus_words, **word2vec)
-```
+추가된 클래스에 대한 word embedding된 값들을 반환한다.
 
 ### 모델 train하기
 이렇게 나온 word2vec.npy는 train시 사용되며, 해당 semantic 모델명으로 pth가 담긴 폴더가 생성된다.
@@ -345,7 +343,7 @@ python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_w
 ### .mar 생성하기
 mar 파일을 생성하기 위해서는 2가지가 필요한데, model_best.pth와 acc_im_em.npy이다.  
 acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.  
-이 파일에서도 semantic_models = []에 embedding된 npy의 이름을 적어주고,
+이 파일에서도 semantic_models = []에 word2vec npy의 이름을 적어주고,
 ```
     def _load_files_tuberlin_zeroshot( self,root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
                                       photo_sd='', sketch_sd='', dataset=''):
@@ -360,8 +358,7 @@ acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.
 ```
 fls_im가 base64가 출력이 되도록 해준다. 만약 base64가 출력되는 것이 아니라 aug 파일명까지 출력된다면 if문 전체를 base64로 맞춰준다.
 
-archiving을 위해 handler.py부분에 대한 수정이 필요하며, ts/torch_handler/sem_pcyc_handler_branden.py를 사용하였다.  
-가장 먼저, aws ssh에 mar, npy, pth,  등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.  
+sem_pcyc_handler의 경우, aws ssh에 mar, npy, pth, 추가된 dataset 등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.  
 ```
 self.npy_path = '/home/model-server/npy'
 path_dataset = '/home/model-server/sem_pcyc/dataset'
@@ -381,30 +378,32 @@ semantic_models = ['new_plus_words']
         else:
             fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
 ```
-로 변경해주어야 한다. handler의 경우 else문만 base64로 바꾸었더니 제대로 파일을 분류하지 못하는 문제가 발생하였다.  
+로 변경해주어야 한다. handler의 경우 else문만 base64로 바꾸었더니 제대로 파일을 분류하지 못하는 문제가 발생하였다.
+
+만약 fls_im의 size가 다르다면, 성능이 매우 낮아지므로 acc_im_em과 handler에서의 fls_im size를 같게 맞춰주는 것이 중요하다.
 
 archiving을 하여 mar파일을 생성한다.  
 ```
-torch-model-archiver --model-name sem_pcyc2.0 --version 2.0 --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler_branden.py --extra-files ./npy/acc_im_em.npy
+torch-model-archiver --model-name sem_pcyc2.0 --version 2.0 --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files ./npy/acc_im_em.npy
 ```
 
 ### aws ssh에 접속하여 model-store에 mar파일 올리기
 scp 를 이용하여 파일 및 디렉토리를 전송할 수 있다.  
-ml-key-toonsquare.pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.  
+pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.  
 ```
 예) .mar 전송
-scp -i ./ml-key-toonsquare.pem /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ubuntu@13.209.76.135:/home/ubuntu/sem-pcyc/model-store
+scp -i ./pem키 /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ubuntu@13.209.76.135:/home/ubuntu/sem-pcyc/model-store
 
 예) .images dataset 전송
-scp -r -i ./ml-key-toonsquare.pem /home/ubuntu/sem_pcyc/dataset/intersection/images/ ubuntu@13.209.76.135:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
+scp -r -i ./pem키 /home/ubuntu/sem_pcyc/dataset/intersection/images/ ubuntu@13.209.76.135:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
 ```
 
 aws ssh에 mar, npy(acc_im_em & semantic), pth, dataset 등을 경로에 맞게 전송을 해야 한다.  
+npy 파일(semantic_model)의 경로는 home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
+pth 파일의 경로는 home/ubuntu/ml_data_sem_pcyc/aux/CheckPoints/intersection/모델명/64/model_best.pth
+npy 파일(acc_im_em.npy)의 경로는 home/ubuntu/ml_data/sem_pcyc/npy
 mar 파일의 경로는 home/ubuntu/sem-pcyc/model-store  
-npy 파일(acc_im_em.npy)의 경로는 home/ubuntu/ml_data/sem_pcyc/npy  
-npy 파일(semantic_model)의 경로는 home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection  
-pth 파일의 경로는 home/ubuntu/ml_data_sem_pcyc/aux/CheckPoints/intersection/모델명/64/model_best.pth  
-dataset의 경로는 home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images 또는 sketches  
+dataset의 경로는 home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images 또는 sketches
 
 ### version update하기
 파일들이 경로에 맞게 위치해있다면, model 등록할 수 있다.  
@@ -412,7 +411,7 @@ dataset의 경로는 home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images �
 curl -X POST "http://localhost:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc2.0.mar"
 ```
 을 하면 "status": "Model /"sem_pcyc/" Version: 2.0 registered with 1 initial workers" 라는 메시지와 함께 등록이 된다.  
-만약, 오류가 발생한다면(특히 "code":500 오류), 
+만약, 오류가 발생한다면,(특히 "code":500) 
 
 ```
 docker logs mar
