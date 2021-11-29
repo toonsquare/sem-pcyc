@@ -357,7 +357,7 @@ acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.
 ```
 fls_im가 base64가 출력이 되도록 해준다. 만약 base64가 출력되는 것이 아니라 aug 파일명까지 출력된다면 if문 전체를 base64로 맞춰준다.
 
-archiving을 위해 sem_pcyc_handler.py부분에 대한 수정이 필요하며, ts/torch_handler/sem_pcyc_handler_branden.py를 사용하였다.
+archiving을 위해 handler.py부분에 대한 수정이 필요하며, ts/torch_handler/sem_pcyc_handler_branden.py를 사용하였다.
 가장 먼저, aws ssh에 mar, npy, pth,  등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.
 ```
 self.npy_path = '/home/model-server/npy'
