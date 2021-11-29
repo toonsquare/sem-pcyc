@@ -87,3 +87,6 @@ for key, value in load_dict_list.items():
 print(dict_list)
 print(len(dict_list))
 print(type(load_dict_list))
+
+# 2개의 dictionary merge하기
+# new_word2vec = dict(plus_words, **word2vec)
