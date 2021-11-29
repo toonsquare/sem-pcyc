@@ -47,13 +47,20 @@ class ModelHandler(BaseHandler):
         self.photo_sd = ''
         self.sketch_sd = ''
         self.sketch_dir = None
-        self.splits_test =[]
-        self.image_emd = self.np_load(
-            "./images_embedding.npy"
-        )
-    # embedding npy file load
+        self.splits_test = []
+        self.acc_im_em = None
+        self.acc_im_em_npy_saved = None
+        self.max_prediction_size = 30
+        self.npy_path = '/home/model-server/npy'
+        # self.npy_path = '/home/ubuntu/projects_jonathan/npy'
+        npy_full_path = os.path.join(self.npy_path, "acc_im_em.npy")
+        if os.path.isfile(npy_full_path):
+            self.acc_im_em = self.np_load(npy_full_path)
+
     def np_load(self, npy_path):
         images_emd = np.load(npy_path)
+        print('success load acc_im_em.npy~!!!!!')
+        self.acc_im_em_npy_saved = True
         return images_emd
 
     def initialize(self, context):
@@ -102,6 +109,7 @@ class ModelHandler(BaseHandler):
     def _list_classes_from_module(self, module, parent_class=None):
         """
         Parse user defined module to get all model service classes in it.
+
         :param module:
         :param parent_class:
         :return: List of model service class definitions
@@ -160,9 +168,12 @@ class ModelHandler(BaseHandler):
         state_dict = checkpoint['state_dict']
         sem_dim = 0
         path_dataset = '/home/model-server/sem_pcyc/dataset'
+        #path_dataset = '/home/ubuntu/sem_pcyc/dataset'
         path_aux = '/home/model-server/sem_pcyc/aux'
+        #path_aux = '/home/ubuntu/sem_pcyc/aux'
         self.dataset = dataset = 'intersection'
-        semantic_models = ['word2vec-google-news']
+        #semantic_models = ['word2vec-google-news']
+        semantic_models = ['new_plus_words']
         files_semantic_labels = []
         dim_out = 64
         str_aux = ''
@@ -207,23 +218,24 @@ class ModelHandler(BaseHandler):
 
         print('Loading data ...')
         splits = self._load_files_tuberlin_zeroshot(root_path=root_path, split_eccv_2018=False,
-                                                                  photo_dir=photo_dir, sketch_dir=sketch_dir,
-                                                                  photo_sd=photo_sd,
-                                                                  sketch_sd=sketch_sd)
+                                                    photo_dir=photo_dir, sketch_dir=sketch_dir,
+                                                    photo_sd=photo_sd,
+                                                    sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
-        splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
-        print('----te_fls_sk----')
+        # splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
+        # print('----te_fls_sk----')
         # print(splits['te_fls_sk'])
-        splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
-        print('----te_clss_sk----')
+        # splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
+        # print('----te_clss_sk----')
         # print(splits['te_clss_sk'])
-        splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
-        print('----te_fls_im----')
-        # print(splits['te_fls_im'])
-        splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
-        print('----te_clss_im----')
+        # splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
+        # print('----te_fls_im----')
+        # # print(splits['te_fls_im'])
+        # splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
+        # print('----te_clss_im----')
         # print(splits['te_clss_im'])
 
+        print('size splits[te_fls_im] : {}'.format(len(splits['te_fls_im'])))
         print('te_fls_im type.{}'.format(type(splits['te_fls_im'])))
         self.splits_test = splits['te_fls_im']
         dict_clss = self._create_dict_texts(splits['tr_clss_im'])
@@ -293,20 +305,24 @@ class ModelHandler(BaseHandler):
         preprocessed_data = data[0].get("data")
         sketch_embedding = ''
         if preprocessed_data is None:
+            print('data[0].get("data")')
             preprocessed_data = data[0].get("body")
+            if preprocessed_data is None:
+                preprocessed_data = data[0].get("file")
             preprocessed_data = Image.open(BytesIO(preprocessed_data))
             preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+            # preprocessed_data.save(os.path.join(self.npy_path, 'test_invert.png'))
             transform_image = self.transform_sketch(preprocessed_data)
+            # preprocessed_data.save(os.path.join(self.npy_path, 'test.png'))
             print('transform_image shape : {}'.format(transform_image.shape))
             if torch.cuda.is_available():
                 transform_image = transform_image.cuda()
-                transform_image = transform_image.resize(1, 3, self.sk_sz, self.sk_sz)
-                sketch_embedding = self.model.get_sketch_embeddings(transform_image)
             else:
                 print('cuda is not available for image transforming')
 
+            transform_image = transform_image.resize(1, 3, self.sk_sz, self.sk_sz)
+            sketch_embedding = self.model.get_sketch_embeddings(transform_image)
             print('sketch_embedding shape : {}'.format(sketch_embedding.shape))
-
         else:
             print('input data error')
         return sketch_embedding
@@ -319,20 +335,29 @@ class ModelHandler(BaseHandler):
         """
         # Do some inference call to engine here and return output
         # model_output = self.model.forward(model_input)
-        for i, (im, cls_im) in enumerate(self.test_loader_image):
-            if torch.cuda.is_available():
-                im = im.cuda()
+        if self.acc_im_em is None:
+            for i, (im, cls_im) in enumerate(self.test_loader_image):
+                if torch.cuda.is_available():
+                    im = im.cuda()
 
-                # Image embedding into a semantic space
-            im_em = self.model.get_image_embeddings(im)
+                    # Image embedding into a semantic space
+                im_em = self.model.get_image_embeddings(im)
 
-            # Accumulate sketch embedding
-            if i == 0:
-                acc_im_em = im_em.cpu().data.numpy()
-                acc_cls_im = cls_im
-            else:
-                acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)
-                acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)
+                # Accumulate sketch embedding
+                if i == 0:
+                    acc_im_em = im_em.cpu().data.numpy()
+                    acc_cls_im = cls_im
+                else:
+                    acc_im_em = np.concatenate((acc_im_em, im_em.cpu().data.numpy()), axis=0)
+                    acc_cls_im = np.concatenate((acc_cls_im, cls_im), axis=0)
+            self.acc_im_em = acc_im_em
+
+        if self.acc_im_em_npy_saved is None:
+            npy_path = os.path.join(self.npy_path, 'acc_im_em.npy');
+            print('npy_path : {}'.format(npy_path))
+            # np.save(npy_path, acc_im_em)
+
+            self.acc_im_em_npy_saved = True
 
         model_input = model_input.cpu().data.numpy()
         # acc_sk_em = np.concatenate(([], test_input_em), axis=0)
@@ -342,7 +367,9 @@ class ModelHandler(BaseHandler):
         print('Computing evaluation metrics...', end='')
 
         # Compute similarity
-        sim_euc = np.exp(-cdist(model_input, acc_im_em, metric='euclidean'))
+        print('size acc_im_em : {}'.format(len(self.acc_im_em)))
+
+        sim_euc = np.exp(-cdist(model_input, self.acc_im_em, metric='euclidean'))
         print('sim_euc shape : {}'.format(sim_euc.shape))
         print('Done')
 
@@ -363,13 +390,14 @@ class ModelHandler(BaseHandler):
 
         postprocess_output = []
 
-        ind_sk = np.argsort(-inference_output)[:10][0][:10]
+        ind_sk = np.argsort(-inference_output)[:10][0][:self.max_prediction_size]
         print('ind_sk shape {}'.format(ind_sk.shape))
         for j, iim in enumerate(ind_sk):
             print('iim : {}'.format(iim))
             filename = fls_im[iim].split("/")[-1]
             id = filename.split('.')[0]
-            postprocess_output.append(id)
+            # postprocess_output.append(id)
+            postprocess_output.append(fls_im[iim])
             # im = Image.open(os.path.join(dir_im, fls_im[iim])).convert(mode='RGB').resize(self.im_sz)
             # im.save(os.path.join(os.getcwd(), str(j + 1) + '.png'))
         print(postprocess_output)
@@ -439,7 +467,7 @@ class ModelHandler(BaseHandler):
 
         # image files and classes
         if dataset == '':
-            fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
         else:
             fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
         print('fls_im.size : {}'.format(len(fls_im)))
@@ -461,9 +489,10 @@ class ModelHandler(BaseHandler):
         np.random.seed(0)
         tr_classes = np.random.choice(classes, int(0.88 * len(classes)), replace=False)
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
-        te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        # te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        te_classes = np.random.choice(classes, int(1 * len(classes)), replace=False)
 
-        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
+        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='service')
         idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
         idx_te_im, idx_te_sk = self._get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
 
