@@ -338,6 +338,9 @@ new_word2vec = dict(plus_words, **word2vec)
 
 ### 모델 train하기
 이렇게 나온 word2vec.npy는 train시 사용되며, 해당 semantic 모델명으로 pth가 담긴 폴더가 생성된다.
+```
+python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 200 --lr 0.0001 --batch-size 32 --save-image-results
+```
 
 ### .mar 생성하기
 mar 파일을 생성하기 위해서는 2가지가 필요한데, model_best.pth와 acc_im_em.npy이다.  
@@ -357,8 +360,8 @@ acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.
 ```
 fls_im가 base64가 출력이 되도록 해준다. 만약 base64가 출력되는 것이 아니라 aug 파일명까지 출력된다면 if문 전체를 base64로 맞춰준다.
 
-archiving을 위해 handler.py부분에 대한 수정이 필요하며, ts/torch_handler/sem_pcyc_handler_branden.py를 사용하였다.
-가장 먼저, aws ssh에 mar, npy, pth,  등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.
+archiving을 위해 handler.py부분에 대한 수정이 필요하며, ts/torch_handler/sem_pcyc_handler_branden.py를 사용하였다.  
+가장 먼저, aws ssh에 mar, npy, pth,  등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.  
 ```
 self.npy_path = '/home/model-server/npy'
 path_dataset = '/home/model-server/sem_pcyc/dataset'
@@ -380,11 +383,14 @@ semantic_models = ['new_plus_words']
 ```
 로 변경해주어야 한다. handler의 경우 else문만 base64로 바꾸었더니 제대로 파일을 분류하지 못하는 문제가 발생하였다.  
 
-archiving을 하여 mar파일을 생성한다.
+archiving을 하여 mar파일을 생성한다.  
+```
+torch-model-archiver --model-name sem_pcyc2.0 --version 2.0 --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler_branden.py --extra-files ./npy/acc_im_em.npy
+```
 
 ### aws ssh에 접속하여 model-store에 mar파일 올리기
 scp 를 이용하여 파일 및 디렉토리를 전송할 수 있다.  
-ml-key-toonsquare.pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.
+ml-key-toonsquare.pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.  
 ```
 예) .mar 전송
 scp -i ./ml-key-toonsquare.pem /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ubuntu@13.209.76.135:/home/ubuntu/sem-pcyc/model-store
@@ -413,12 +419,12 @@ docker logs mar
 ```
 로그를 통해 오류를 확인할 수 있다.  
 
-등록이 잘 되었는지 model을 확인할 수 있다.
+등록이 잘 되었는지 model을 확인할 수 있다.  
 ```
 curl http://localhost:8081/models/sem_pcyc/2.0
 ```
 
-등록이 잘 되었다면 version 2를 default모델로 지정해준다.
+등록이 잘 되었다면 version 2를 default모델로 지정해준다.  
 ```
 curl -v -X PUT http://localhost:8081/models/sem_pcyc2.0/set-default
 ```
