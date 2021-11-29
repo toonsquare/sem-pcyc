@@ -337,10 +337,7 @@ new_word2vec = dict(plus_words, **word2vec)
 ```
 
 ### 모델 train하기
-이렇게 나온 word2vec.npy를 이용하여 모델은 train할 때 사용되는데, semantic_models = [] 부분에 embedding된 npy의 이름을 적어준다.
-```
-semantic_models = ['new_plus_words']
-```
+이렇게 나온 word2vec.npy는 train시 사용되며, 해당 semantic 모델명으로 pth가 담긴 폴더가 생성된다.
 
 ### .mar 생성하기
 mar 파일을 생성하기 위해서는 2가지가 필요한데, model_best.pth와 acc_im_em.npy이다.
