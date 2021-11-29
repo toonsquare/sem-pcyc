@@ -5,8 +5,7 @@
 
 PyTorch implementation of our SEM-PCYC model for zero-shot sketch-based image retrieval:  
 [Semantically Tied Paired Cycle Consistency for Zero-Shot Sketch-based Image Retrieval](https://arxiv.org/abs/1903.03372)  
-[Anjan Dutta](https://sites.google.com/site/2adutta/)
-, [Zeynep Akata](https://ivi.fnwi.uva.nl/uvaboschdeltalab/people/zeynep-akata/)  
+[Anjan Dutta](https://sites.google.com/site/2adutta/), [Zeynep Akata](https://ivi.fnwi.uva.nl/uvaboschdeltalab/people/zeynep-akata/)  
 [CVPR, 2019](http://cvpr2019.thecvf.com/)
 ## 개발환경 정리
 |Train|Test|Ubuntu|  GPU      |  Driver |  Cuda |Conda |Python|Pytorch|torchvision|
@@ -265,10 +264,23 @@ docker run --rm -it --gpus all -p 8080:8080 -p 8081:8081 --name mar -v $(pwd)/mo
 ```
 
 ## Version 관리
+### Torchserve를 신규 모델 등록 및 버전 관리 
+1.	신규 모델 등록
+다중 모델 등록 가능, 필요에 따라 동시에 사용 할 수 있다.
+-	모델 등록 시 모델 명을 따로 넣지 않을 경우 mar 파일명이 model 명으로 등록된다.
+2.	버전 관리
+-	버전은 mar 파일을 만들 때 파일 이름(--model-name 옵션)에 명시
+-	최초 버전은 아무것도 표기하지 않는다.
+Ex) 최초 버전 : sem_pcyc.mar | 그후에 추가하고 싶은 버전 : sem_pcyc_1.0.1, sem_pcyc_2.0.3
+-	새로운 버전 등록 시 꼭 모델 명을 넣어야 새로운 모델이 아닌 기존 모델에 다른 버전이 등록 된다. 모델 명을 입력하지 않을 경우 mar 파일에서 모델명을 가져오기 때문에 이전의 등록된 모델명과 달라 새로운 모델로 등록된다.
+-	Mar 파일은 삭제하지 않는다.(중요!!)
+3.	Dokcer shutdown 발생 시 대응책
+-	만약 docker가 내려갔다 다시 켜 질 경우 가장 최근 로그(/logs/config/shutdown.cfg)를 사용하여 torchserve를 시작
+```
+torchserve --log-config shutdown.cfg --foreground --start --model-store ./model-store 
+```
 
-### reference docs
-- https://pytorch.org/serve/management_api.html
-- https://pytorch.org/serve/server.html
+자세한 실행 코드는 아래 코드 참고
 
 모델 archive(version 2.0)
 ```
@@ -277,6 +289,9 @@ torch-model-archiver --model-name sem_pcyc --version 2.0 --model-file ./src/mode
 model register
 ```
 curl -X POST "http://localhost:8081/models?url=/model-store/sem_pcyc.mar"
+
+model version 2.0 등록
+curl -X POST "http://localhost:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc2.0.mar"
 ```
 모델 확인
 ```
@@ -285,6 +300,10 @@ curl http://localhost:8081/models/sem_pcyc/2.0
 default 모델 변경(version 2.0을 default 모델로 변경)
 ```
 curl -v -X PUT http://localhost:8081/models/sem_pcyc/2.0/set-default
+```
+모델 2.0 version 확인
+```
+curl http://localhost:8081/models/sem_pcyc
 ```
 모델 등록 취소(version 1.0을 등록 취소할 경우)
 ```
@@ -295,12 +314,125 @@ Request 하기
 curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
 ```
 
+
 log사용하여 시작하기
 
-torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에 가장 최근 로그를 불러올 수 있다.
+torchserve --start를 했을때 logs/config 디렉토리가 생긴다. 여기에 가장 최근 로그를 불러올 수 있다.(단, 관련 mar 파일들이 모두 model-store에 있어야한다.)
 ```
 torchserve  --foreground --start --model-store ./model-store --log-config ./logs/config/20211028083058376-shutdown.cfg
 ```
+
+## class 추가 후 mar version update하기
+### class 추가시 word embedding하기
+### word2vec.npy 생성하기
+
+data set에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.  
+src/newclass_word2vec.py에 있는 create_wordemb()함수를 사용하면,  
+추가된 클래스들의 embedding 값들을 npy로 저장하여 반환해준다.
+
+추가된 word2vec.npy를 기존의 word2vec.npy와 합친 후 하나의 npy로 만들어 train에 사용할 수 있고,  
+코드상에서 추가된 word2vec.npy와 기존의 word2vec.npy를 합쳐서 train에서 사용할 수 있다. 
+```
+new_word2vec = dict(plus_words, **word2vec)
+```
+
+### 모델 train하기
+이렇게 나온 word2vec.npy는 train시 사용되며, 해당 semantic 모델명으로 pth가 담긴 폴더가 생성된다.
+```
+python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 200 --lr 0.0001 --batch-size 32 --save-image-results
+```
+
+### .mar 생성하기
+mar 파일을 생성하기 위해서는 2가지가 필요한데, model_best.pth와 acc_im_em.npy이다.  
+acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.  
+이 파일에서도 semantic_models = []에 embedding된 npy의 이름을 적어주고,
+```
+    def _load_files_tuberlin_zeroshot( self,root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
+                                      photo_sd='', sketch_sd='', dataset=''):
+        path_im = os.path.join(root_path, photo_dir, photo_sd)
+        path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
+
+        # image files and classes
+        if dataset == '':
+            fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+        else:
+            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+```
+fls_im가 base64가 출력이 되도록 해준다. 만약 base64가 출력되는 것이 아니라 aug 파일명까지 출력된다면 if문 전체를 base64로 맞춰준다.
+
+archiving을 위해 handler.py부분에 대한 수정이 필요하며, ts/torch_handler/sem_pcyc_handler_branden.py를 사용하였다.  
+가장 먼저, aws ssh에 mar, npy, pth,  등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.  
+```
+self.npy_path = '/home/model-server/npy'
+path_dataset = '/home/model-server/sem_pcyc/dataset'
+path_aux = '/home/model-server/sem_pcyc/aux'
+semantic_models = ['new_plus_words']
+```
+
+```
+    def _load_files_tuberlin_zeroshot( self,root_path, split_eccv_2018=False, photo_dir='images', sketch_dir='sketches',
+                                      photo_sd='', sketch_sd='', dataset=''):
+        path_im = os.path.join(root_path, photo_dir, photo_sd)
+        path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
+
+        # image files and classes
+        if dataset == '':
+            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        else:
+            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+```
+로 변경해주어야 한다. handler의 경우 else문만 base64로 바꾸었더니 제대로 파일을 분류하지 못하는 문제가 발생하였다.  
+
+archiving을 하여 mar파일을 생성한다.  
+```
+torch-model-archiver --model-name sem_pcyc2.0 --version 2.0 --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler_branden.py --extra-files ./npy/acc_im_em.npy
+```
+
+### aws ssh에 접속하여 model-store에 mar파일 올리기
+scp 를 이용하여 파일 및 디렉토리를 전송할 수 있다.  
+ml-key-toonsquare.pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.  
+```
+예) .mar 전송
+scp -i ./ml-key-toonsquare.pem /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ubuntu@13.209.76.135:/home/ubuntu/sem-pcyc/model-store
+
+예) .images dataset 전송
+scp -r -i ./ml-key-toonsquare.pem /home/ubuntu/sem_pcyc/dataset/intersection/images/ ubuntu@13.209.76.135:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
+```
+
+aws ssh에 mar, npy(acc_im_em & semantic), pth, dataset 등을 경로에 맞게 전송을 해야 한다.  
+mar 파일의 경로는 home/ubuntu/sem-pcyc/model-store  
+npy 파일(acc_im_em.npy)의 경로는 home/ubuntu/ml_data/sem_pcyc/npy  
+npy 파일(semantic_model)의 경로는 home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection  
+pth 파일의 경로는 home/ubuntu/ml_data_sem_pcyc/aux/CheckPoints/intersection/모델명/64/model_best.pth  
+dataset의 경로는 home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images 또는 sketches  
+
+### version update하기
+파일들이 경로에 맞게 위치해있다면, model 등록할 수 있다.  
+```
+curl -X POST "http://localhost:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc2.0.mar"
+```
+을 하면 "status": "Model /"sem_pcyc/" Version: 2.0 registered with 1 initial workers" 라는 메시지와 함께 등록이 된다.  
+만약, 오류가 발생한다면(특히 "code":500 오류), 
+
+```
+docker logs mar
+```
+로그를 통해 오류를 확인할 수 있다.  
+
+등록이 잘 되었는지 model을 확인할 수 있다.  
+```
+curl http://localhost:8081/models/sem_pcyc/2.0
+```
+
+등록이 잘 되었다면 version 2를 default모델로 지정해준다.  
+```
+curl -v -X PUT http://localhost:8081/models/sem_pcyc2.0/set-default
+```
+
+
+### reference docs
+- https://pytorch.org/serve/management_api.html
+- https://pytorch.org/serve/server.html
 
 ## Author
 
