@@ -323,10 +323,14 @@ torchserve  --foreground --start --model-store ./model-store --log-config ./logs
 ```
 
 ## class 추가 후 mar version update하기
-### class 추가시 word embedding하기
-### word2vec.npy 생성하기
+1. 추가된 class word embedding하여 new_plus_words.npy 생성
+2. 추가된 dataset & new_plus_words.npy로 train하여 model_best.pth 생성
+3. mk_image_emd_npy.py를 이용하여 acc_im_em.npy 생성
+4. sem_pcyc_handler.py & acc_im_em.npy를 이용하여 sem_pcyc.mar 생성
+5. aws ssh에 필요한 파일 전송 및 모델 등록
 
-data set에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.  
+### word2vec.npy 생성하기
+dataset에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.  
 src/newclass_word2vec.py에 있는 create_wordemb()함수를 사용하면,  
 추가된 클래스에 대한 word embedding된 값들을 반환한다.
 
