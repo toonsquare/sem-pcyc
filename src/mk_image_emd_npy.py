@@ -152,7 +152,7 @@ class MakeNPY():
         files_semantic_labels = []
 
         sem_dim = 0
-        semantic_models = ['word2vec-google-news']
+        semantic_models = ['new_plus_words']
         semantic_models = sorted(semantic_models)
 
         for f in semantic_models:
@@ -194,7 +194,7 @@ class MakeNPY():
 
 
         sem_pcyc_model = SEM_PCYC(params_model)
-        path_pth ="/home/ubuntu/sem_pcyc/aux/CheckPoints/intersection/word2vec-google-news/64/model_best.pth"
+        path_pth ="/home/ubuntu/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth"
         device = torch.device("cuda")
         checkpoint = torch.load(path_pth,map_location="cuda:0")
         sem_pcyc_model.load_state_dict(checkpoint['state_dict'])
@@ -208,7 +208,7 @@ def main() :
     print("--------------END Embedding--------------")
     print("\n")
     print("--------------START Saving--------------")
-    np.save("/home/ubuntu/projects/images_embedding.npy", acc_im_em)
+    np.save("/home/ubuntu/projects/acc_im_em.npy", acc_im_em)
     print("--------------END Saving--------------")
 
 if __name__ == "__main__":
