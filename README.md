@@ -326,7 +326,7 @@ torchserve  --foreground --start --model-store ./model-store --log-config ./logs
 ### class 추가시 word embedding하기
 ### word2vec.npy 생성하기
 
-data set에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.
+data set에 있는 class가 추가되었을 때, 그 class에 맞는 embedding들이 필요하다.  
 src/newclass_word2vec.py에 있는 create_wordemb()함수를 사용하면,  
 추가된 클래스들의 embedding 값들을 npy로 저장하여 반환해준다.
 
