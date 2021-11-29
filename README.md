@@ -360,7 +360,7 @@ acc_im_em.npy는 src/mk_image_emd.py를 통해 만들 수 있다.
 ```
 fls_im가 base64가 출력이 되도록 해준다. 만약 base64가 출력되는 것이 아니라 aug 파일명까지 출력된다면 if문 전체를 base64로 맞춰준다.
 
-archiving을 위해 sem_pcyc_handler.py부분에 대한 수정이 필요하다.
+archiving을 위해 sem_pcyc_handler.py부분에 대한 수정이 필요하다.  
 가장 먼저, aws ssh에 mar, npy, pth,  등의 파일을 전송해야 하므로 그와 같은 경로를 맞춰줄 필요가 있다.
 ```
 self.npy_path = '/home/model-server/npy'
@@ -381,12 +381,12 @@ semantic_models = ['new_plus_words']
         else:
             fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
 ```
-로 변경해주어야 한다. handler의 경우 else문만 base64로 바꾸었더니 제대로 파일을 분류하지 못하는 문제가 발생하였다.
+로 변경해주어야 한다. handler의 경우 else문만 base64로 바꾸었더니 제대로 파일을 분류하지 못하는 문제가 발생하였다.  
 
 archiving을 하여 mar파일을 생성한다.
 
 ### aws ssh에 접속하여 model-store에 mar파일 올리기
-scp 를 이용하여 파일 및 디렉토리를 전송할 수 있다.
+scp 를 이용하여 파일 및 디렉토리를 전송할 수 있다.  
 ml-key-toonsquare.pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.
 ```
 예) .mar 전송
@@ -404,8 +404,7 @@ pth 파일의 경로는 home/ubuntu/ml_data_sem_pcyc/aux/CheckPoints/intersectio
 dataset의 경로는 home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images 또는 sketches  
 
 ### version update하기
-파일들이 경로에 맞게 위치해있다면, model 등록할 수 있다.
-
+파일들이 경로에 맞게 위치해있다면, model 등록할 수 있다.  
 ```
 curl -X POST "http://localhost:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc2.0.mar"
 ```
