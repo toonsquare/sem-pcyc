@@ -390,13 +390,13 @@ torch-model-archiver --model-name sem_pcyc2.0 --version 2.0 --model-file ./src/m
 
 ### aws ssh에 접속하여 model-store에 mar파일 올리기
 scp 를 이용하여 파일 및 디렉토리를 전송할 수 있다.  
-ml-key-toonsquare.pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.  
+pem이 키이며, 해당 키가 있는 경로에서 명령어를 사용해야 permission denied 오류가 발생하지 않는다.  
 ```
 예) .mar 전송
-scp -i ./ml-key-toonsquare.pem /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ubuntu@13.209.76.135:/home/ubuntu/sem-pcyc/model-store
+scp -i ./pem키 /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ubuntu@13.209.76.135:/home/ubuntu/sem-pcyc/model-store
 
 예) .images dataset 전송
-scp -r -i ./ml-key-toonsquare.pem /home/ubuntu/sem_pcyc/dataset/intersection/images/ ubuntu@13.209.76.135:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
+scp -r -i ./pem키 /home/ubuntu/sem_pcyc/dataset/intersection/images/ ubuntu@13.209.76.135:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
 ```
 
 aws ssh에 mar, npy(acc_im_em & semantic), pth, dataset 등을 경로에 맞게 전송을 해야 한다.  

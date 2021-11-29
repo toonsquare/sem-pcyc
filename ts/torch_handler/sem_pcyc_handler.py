@@ -169,7 +169,7 @@ class ModelHandler(BaseHandler):
         path_dataset = '/home/model-server/sem_pcyc/dataset'
         path_aux = '/home/model-server/sem_pcyc/aux'
         self.dataset = dataset = 'intersection'
-        semantic_models = ['word2vec-google-news']
+        semantic_models = ['new_plus_words']
         files_semantic_labels = []
         dim_out = 64
         str_aux = ''
@@ -218,11 +218,11 @@ class ModelHandler(BaseHandler):
                                                     photo_sd=photo_sd,
                                                     sketch_sd=sketch_sd)
         # Combine the valid and test set into test set
-        splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
-        print('----te_fls_sk----')
+        # splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
+        # print('----te_fls_sk----')
         # print(splits['te_fls_sk'])
-        splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
-        print('----te_clss_sk----')
+        # splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
+        # print('----te_clss_sk----')
         # print(splits['te_clss_sk'])
         # splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
         # print('----te_fls_im----')
@@ -463,7 +463,7 @@ class ModelHandler(BaseHandler):
 
         # image files and classes
         if dataset == '':
-            fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
         else:
             fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
         print('fls_im.size : {}'.format(len(fls_im)))
