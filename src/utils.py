@@ -349,3 +349,26 @@ def clean_folder(folder):
                 shutil.rmtree(p)
         except Exception as e:
             print(e)
+
+
+# train_image, sketch에 사용되는 함수
+def class_weights(clss):
+    uniq_clss, clss_cnts = np.unique(clss, return_counts=True)
+    wts = np.zeros(len(clss))
+    for i in range(len(clss)):
+        wts[i] = clss_cnts[np.where(uniq_clss == clss[i])]
+    wts = 1 / wts
+    return wts
+
+def accuracy(output, target, topk=(1,)):
+    """Computes the precision@k for the specified values of k"""
+    maxk = max(topk)
+    batch_size = target.size(0)
+    _, pred = output.topk(maxk, 1, True, True)
+    pred = pred.t()
+    correct = pred.eq(target.view(1, -1).expand_as(pred))
+    res = []
+    for k in topk:
+        correct_k = correct[:k].view(-1).float().sum(0)
+        res.append(correct_k.mul_(100.0 / batch_size))
+    return res
