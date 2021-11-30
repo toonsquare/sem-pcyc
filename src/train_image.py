@@ -136,7 +136,8 @@ def main():
     elif args.model == 'SEResNet50':
         model = SEResNet50Feats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
     elif args.model == 'VGGNet':
-        model = VGGNetFeats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
+        # model = VGGNetFeats(num_classes=len(dict_clss), pretrained=True, finetune_feats=False, finetune_class=True)
+        model = VGGNetFeats(pretrained=True, finetune = False)
     else:
         raise NotImplementedError
     print('Done')
