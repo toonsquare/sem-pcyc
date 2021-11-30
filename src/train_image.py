@@ -105,7 +105,9 @@ def main():
         exit()
 
     # class dictionary
-    dict_clss = utils.create_dict_texts(splits['tr_clss_im'] + splits['va_clss_im'] + splits['te_clss_im'])
+    # dict_clss = utils.create_dict_texts(splits['tr_clss_im'] + splits['va_clss_im'] + splits['te_clss_im'])
+    text_splits = np.concatenate((splits['tr_clss_im'], splits['va_clss_im'], splits['te_clss_im']))
+    dict_clss = utils.create_dict_texts(text_splits)
     tr_clss = utils.numeric_classes(splits['tr_clss_im'], dict_clss)
     va_clss = utils.numeric_classes(splits['va_clss_im'], dict_clss)
     te_clss = utils.numeric_classes(splits['te_clss_im'], dict_clss)
