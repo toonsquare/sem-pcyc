@@ -47,5 +47,5 @@ plus_word = {}
 plus_word = create_wordemb(root_path)
 
 # 생성한 dict를 npy로 만들기
-np.save('new_plus_words.npy', plus_word)
+np.save('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', plus_word)
 print('npy create!')

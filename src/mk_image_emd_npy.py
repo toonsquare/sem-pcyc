@@ -208,7 +208,7 @@ def main() :
     print("--------------END Embedding--------------")
     print("\n")
     print("--------------START Saving--------------")
-    np.save("/home/ubuntu/projects/acc_im_em.npy", acc_im_em)
+    np.save("/home/ubuntu/projects_jonathan/acc_im_em.npy", acc_im_em)
     print("--------------END Saving--------------")
 
 if __name__ == "__main__":
