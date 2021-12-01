@@ -399,8 +399,8 @@ scp -r -i ./pem키 /home/ubuntu/sem_pcyc/dataset/intersection/images/ ubuntu@ip:
 ```
 
 aws ssh에 mar, npy(acc_im_em & semantic), pth, dataset 등을 경로에 맞게 전송을 해야 한다.  
-npy 파일(semantic_model)의 경로는 home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
-pth 파일의 경로는 home/ubuntu/ml_data_sem_pcyc/aux/CheckPoints/intersection/모델명/64/model_best.pth  
+npy 파일(semantic_model)의 경로는 home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection  
+pth 파일의 경로는 home/ubuntu/ml_data_sem_pcyc/aux/CheckPoints/intersection/모델명/64/model_best.pth   
 npy 파일(acc_im_em.npy)의 경로는 home/ubuntu/ml_data/sem_pcyc/npy  
 mar 파일의 경로는 home/ubuntu/sem-pcyc/model-store    
 dataset의 경로는 home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images 또는 sketches
