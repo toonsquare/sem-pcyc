@@ -109,14 +109,27 @@ def main():
     text_splits = np.concatenate((splits['tr_clss_im'], splits['va_clss_im'], splits['te_clss_im']))
     dict_clss = utils.create_dict_texts(text_splits)
     tr_clss = utils.numeric_classes(splits['tr_clss_im'], dict_clss)
-    va_clss = utils.numeric_classes(splits['va_clss_im'], dict_clss)
+    # va_clss = utils.numeric_classes(splits['va_clss_im'], dict_clss)
+
+    splits['te_fls_im'] = np.concatenate((splits['va_fls_im'], splits['te_fls_im']), axis=0)
+    splits['te_clss_im'] = np.concatenate((splits['va_clss_im'], splits['te_clss_im']), axis=0)
     te_clss = utils.numeric_classes(splits['te_clss_im'], dict_clss)
+
+    print("splits['tr_fls_im']", len(splits['tr_fls_im']))
+    print("splits['tr_clss_im']", len(splits['tr_clss_im']))
+    print('tr_clss', len(tr_clss))
+
+    print("splits['te_fls_im']", len(splits['te_fls_im']))
+    print("splits['te_clss_im']", len(splits['te_clss_im']))
+    print('te_clss', len(te_clss))
 
     # generators
     data_train = DataGeneratorImage(args.dataset, root_path, photo_dir, photo_sd, splits['tr_fls_im'], tr_clss, transforms=transform)
-    data_valid = DataGeneratorImage(args.dataset, root_path, photo_dir, photo_sd, splits['va_fls_im'], va_clss, transforms=transform)
+    # data_valid = DataGeneratorImage(args.dataset, root_path, photo_dir, photo_sd, splits['va_fls_im'], va_clss, transforms=transform)
     data_test = DataGeneratorImage(args.dataset, root_path, photo_dir, photo_sd, splits['te_fls_im'], te_clss, transforms=transform)
     print('Done')
+
+
 
     # compute class weights
     weights = torch.DoubleTensor(utils.class_weights(tr_clss))
@@ -125,7 +138,7 @@ def main():
     # PyTorch train loader
     train_loader = DataLoader(data_train, batch_size=args.batch_size, shuffle=False, sampler=sampler, num_workers=4, pin_memory=True)
     # PyTorch valid loader
-    valid_loader = DataLoader(data_valid, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    # valid_loader = DataLoader(data_valid, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True)
     # PyTorch test loader
     test_loader = DataLoader(data_test, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
@@ -186,27 +199,31 @@ def main():
         train(train_loader, model, criterion, optimizer, epoch, logger)
 
         # evaluate on validation set
-        with torch.no_grad():
-            acc = validate(valid_loader, model, criterion, epoch, logger)
-
-        print('Accuracy on validation set after {0} epochs: {1:.4f}'.format(epoch + 1, acc))
-
-        if acc > best_acc:
-            best_acc = acc
-            early_stop_counter = 0
-            utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_image': model.state_dict(), 'best_acc': best_acc,
-                                   'optimizer': optimizer.state_dict()}, directory=path_cp)
-        else:
-            if args.early_stop == early_stop_counter:
-                break
-            early_stop_counter += 1
+        # with torch.no_grad():
+        #     acc = validate(valid_loader, model, criterion, epoch, logger)
+        #
+        # print('Accuracy on validation set after {0} epochs: {1:.4f}'.format(epoch + 1, acc))
+        #
+        # if acc > best_acc:
+        #     best_acc = acc
+        #     early_stop_counter = 0
+        #     utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_image': model.state_dict(), 'best_acc': best_acc,
+        #                            'optimizer': optimizer.state_dict()}, directory=path_cp)
+        # else:
+        #     if args.early_stop == early_stop_counter:
+        #         break
+        #     early_stop_counter += 1
 
         # Logger step
-        logger.add_scalar('learning_rate', args.lr)
-        logger.add_scalar('accuracy', acc)
-        logger.step()
+        # logger.add_scalar('learning_rate', args.lr)
+        # logger.add_scalar('accuracy', acc)
+        # logger.step()
 
-        lr -= lr_step
+        # lr -= lr_step
+
+    utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_image': model.state_dict(), 'best_acc': best_acc,
+                            'optimizer': optimizer.state_dict()}, directory=path_cp)
+    print('------------save model---------------')
 
     # load the best model yet
     best_model_file = os.path.join(path_cp, 'model_best.pth')
