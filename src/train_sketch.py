@@ -21,7 +21,7 @@ import torch.backends.cudnn as cudnn
 # user defined
 import utils
 from data import DataGeneratorSketch
-from models import VGGNetFeats, ResNet50Feats, SEResNet50Feats
+from models import VGGNetFeats
 from logger import AverageMeter, Logger
 
 
@@ -91,6 +91,10 @@ def main():
         sketch_dir = 'sketches'
         sketch_sd = ''
         splits = utils.load_files_tuberlin(root_path=root_path, sketch_dir=sketch_dir, sketch_sd=sketch_sd)
+    elif args.dataset == 'intersection':
+        sketch_dir = 'sketches'
+        sketch_sd = ''
+        splits = utils.load_files_tuberlin_zeroshot(root_path=root_path, sketch_dir=sketch_dir, sketch_sd=sketch_sd)
     elif args.dataset == 'QuickDraw':
         raise NotImplementedError
     else:
@@ -98,14 +102,27 @@ def main():
         exit()
 
     # class dictionary
-    dict_clss = utils.create_dict_texts(splits['tr_clss_sk'] + splits['va_clss_sk'] + splits['te_clss_sk'])
+    # dict_clss = utils.create_dict_texts(splits['tr_clss_sk'] + splits['va_clss_sk'] + splits['te_clss_sk'])
+    text_splits = np.concatenate((splits['tr_clss_sk'], splits['va_clss_sk'], splits['te_clss_sk']))
+    dict_clss = utils.create_dict_texts(text_splits)
     tr_clss = utils.numeric_classes(splits['tr_clss_sk'], dict_clss)
-    va_clss = utils.numeric_classes(splits['va_clss_sk'], dict_clss)
+    # va_clss = utils.numeric_classes(splits['va_clss_sk'], dict_clss)
+
+    splits['te_fls_sk'] = np.concatenate((splits['va_fls_sk'], splits['te_fls_sk']), axis=0)
+    splits['te_clss_sk'] = np.concatenate((splits['va_clss_sk'], splits['te_clss_sk']), axis=0)
     te_clss = utils.numeric_classes(splits['te_clss_sk'], dict_clss)
+
+    print("splits['tr_fls_sk']", len(splits['tr_fls_sk']))
+    print("splits['tr_clss_sk']", len(splits['tr_clss_sk']))
+    print('tr_clss', len(tr_clss))
+
+    print("splits['te_fls_sk']", len(splits['te_fls_sk']))
+    print("splits['te_clss_sk']", len(splits['te_clss_sk']))
+    print('te_clss', len(te_clss))
 
     # generators
     data_train = DataGeneratorSketch(args.dataset, root_path, sketch_dir, sketch_sd, splits['tr_fls_sk'], tr_clss, transforms=transform)
-    data_valid = DataGeneratorSketch(args.dataset, root_path, sketch_dir, sketch_sd, splits['va_fls_sk'], va_clss, transforms=transform)
+    #data_valid = DataGeneratorSketch(args.dataset, root_path, sketch_dir, sketch_sd, splits['va_fls_sk'], va_clss, transforms=transform)
     data_test = DataGeneratorSketch(args.dataset, root_path, sketch_dir, sketch_sd, splits['te_fls_sk'], te_clss, transforms=transform)
     print('Done')
 
@@ -116,7 +133,7 @@ def main():
     # PyTorch train loader
     train_loader = DataLoader(data_train, batch_size=args.batch_size, shuffle=False, sampler=sampler, num_workers=4, pin_memory=True)
     # PyTorch test loader
-    valid_loader = DataLoader(data_valid, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True)
+    # valid_loader = DataLoader(data_valid, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True)
     # PyTorch test loader
     test_loader = DataLoader(data_test, batch_size=args.batch_size, shuffle=False, num_workers=4, pin_memory=True)
 
@@ -127,7 +144,8 @@ def main():
     elif args.model == 'SEResNet50':
         model = SEResNet50Feats(num_classes=len(dict_clss), pretrained=True, finetune_feats=True, finetune_class=True)
     elif args.model == 'VGGNet':
-        model = VGGNetFeats(num_classes=len(dict_clss), pretrained=True, finetune_feats=True, finetune_class=True)
+        # model = VGGNetFeats(num_classes=len(dict_clss), pretrained=True, finetune_feats=True, finetune_class=True)
+        model = VGGNetFeats(pretrained=True, finetune=False)
     else:
         raise NotImplementedError
     print('Done')
@@ -176,27 +194,27 @@ def main():
         train(train_loader, model, criterion, optimizer, epoch, logger)
 
         # evaluate on test set
-        with torch.no_grad():
-            acc = validate(valid_loader, model, criterion, epoch, logger)
-
-        print('Accuracy on validation set after {0} epochs: {1:.4f}'.format(epoch + 1, acc))
-
-        if acc > best_acc:
-            best_acc = acc
-            early_stop_counter = 0
-            utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_sketch': model.state_dict(), 'best_acc': best_acc,
-                                   'optimizer': optimizer.state_dict()}, directory=path_cp)
-        else:
-            if args.early_stop == early_stop_counter:
-                break
-            early_stop_counter += 1
-
-        # Logger step
-        logger.add_scalar('learning_rate', args.lr)
-        logger.add_scalar('accuracy', acc)
-        logger.step()
-
-        lr -= lr_step
+        # with torch.no_grad():
+        #     acc = validate(valid_loader, model, criterion, epoch, logger)
+        #
+        # print('Accuracy on validation set after {0} epochs: {1:.4f}'.format(epoch + 1, acc))
+        #
+        # if acc > best_acc:
+        #     best_acc = acc
+        #     early_stop_counter = 0
+        #     utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_sketch': model.state_dict(), 'best_acc': best_acc,
+        #                            'optimizer': optimizer.state_dict()}, directory=path_cp)
+        # else:
+        #     if args.early_stop == early_stop_counter:
+        #         break
+        #     early_stop_counter += 1
+        #
+        # # Logger step
+        # logger.add_scalar('learning_rate', args.lr)
+        # logger.add_scalar('accuracy', acc)
+        # logger.step()
+        #
+        # lr -= lr_step
 
     # load the best model yet
     best_model_file = os.path.join(path_cp, 'model_best.pth')

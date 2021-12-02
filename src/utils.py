@@ -218,6 +218,7 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     fls_sk = glob.glob(os.path.join(path_sk, '*', '*'))
     fls_sk = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_sk])
     clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
+    print('fls_sk.size : {}'.format(len(fls_sk)))
 
     # all the unique classes
     classes = np.unique(clss_im)
