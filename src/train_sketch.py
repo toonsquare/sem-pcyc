@@ -216,6 +216,10 @@ def main():
         #
         # lr -= lr_step
 
+    utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_image': model.state_dict(), 'best_acc': best_acc,
+                            'optimizer': optimizer.state_dict()}, directory=path_cp)
+    print('------------save model---------------')
+
     # load the best model yet
     best_model_file = os.path.join(path_cp, 'model_best.pth')
     if os.path.isfile(best_model_file):
