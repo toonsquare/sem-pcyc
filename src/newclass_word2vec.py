@@ -1,7 +1,6 @@
 import glob
 import os
 import re
-
 import gensim
 import numpy as np
 
@@ -17,7 +16,7 @@ def create_wordemb(root_path, type='word2vec-google-news-300'):
         print("Type specified does not exist.")
         exit()
     model = gensim.models.KeyedVectors.load_word2vec_format(
-        '/home/ubuntu/projects_paul/GoogleNews-vectors-negative300.bin', binary=True).wv
+        '/home/ubuntu/projects_jonathan/GoogleNews-vectors-negative300.bin', binary=True).wv
 
     lv = len(model['airplane'])  # for knowing the length of vector
 
@@ -47,5 +46,18 @@ plus_word = {}
 plus_word = create_wordemb(root_path)
 
 # 생성한 dict를 npy로 만들기
-np.save('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', plus_word)
+np.save('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words_test.npy', plus_word)
 print('npy create!')
+
+'''
+# 생성한 npy 불러오기 - 클래스 확인용
+load_dict = np.load('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words_test.npy', allow_pickle=True)
+
+load_dict_list = load_dict.tolist()
+dict_list = []
+for key, value in load_dict_list.items():
+    dict_list.append(key)
+print(dict_list)
+print(len(dict_list))
+print(type(load_dict_list))
+'''
