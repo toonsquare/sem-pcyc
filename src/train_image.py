@@ -157,7 +157,9 @@ def main():
 
     # Optimizer
     print('Defining optimizer...', end='')
-    optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    # optimizer = optim.SGD(model.parameters(), lr=args.lr, momentum=args.momentum)
+    # Adam optimizer
+    optimizer = optim.Adam(model.parameters(), lr=args.lr)
     print('Done')
 
     # Loss function
