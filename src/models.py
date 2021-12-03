@@ -17,7 +17,7 @@ import torch.utils.data as data
 from PIL import Image
 
 # user defined
-import utils
+# import utils
 
 # Defines the GAN loss which uses either LSGAN or the regular GAN. When LSGAN is used, it is basically same as MSELoss,
 # but it abstracts away the need to create the target label tensor that has the same size as the input
@@ -386,8 +386,9 @@ class SEM_PCYC(nn.Module):
     def optimize_params(self, sk, im, cl):
 
         # Get numeric classes
-        num_cls = torch.from_numpy(utils.numeric_classes(cl, self.dict_clss)).cuda()
-        
+        # num_cls = torch.from_numpy(utils.numeric_classes(cl, self.dict_clss)).cuda()
+        num_cls = torch.from_numpy(numeric_classes(cl, self.dict_clss)).cuda()
+
         # Get the semantic embeddings for cl
         se = np.zeros((len(cl), self.sem_dim), dtype=np.float32)
         for i, c in enumerate(cl):
