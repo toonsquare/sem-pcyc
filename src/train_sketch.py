@@ -184,6 +184,7 @@ def main():
     best_acc = 0
     early_stop_counter = 0
 
+    print('---------start train----------')
     # Epoch for loop
     for epoch in range(args.epochs):
 
@@ -216,7 +217,7 @@ def main():
         #
         # lr -= lr_step
 
-    utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_image': model.state_dict(), 'best_acc': best_acc,
+    utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_sketch': model.state_dict(), 'best_acc': best_acc,
                             'optimizer': optimizer.state_dict()}, directory=path_cp)
     print('------------save model---------------')
 

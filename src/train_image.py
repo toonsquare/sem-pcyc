@@ -220,7 +220,6 @@ def main():
         # logger.step()
 
         # lr -= lr_step
-
     utils.save_checkpoint({'epoch': epoch + 1, 'state_dict_image': model.state_dict(), 'best_acc': best_acc,
                             'optimizer': optimizer.state_dict()}, directory=path_cp)
     print('------------save model---------------')
