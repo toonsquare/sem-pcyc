@@ -12,11 +12,12 @@ import torch.optim as optim
 from torchvision import models
 import torch.nn.functional as F
 import torch.utils.data as data
+
+# 이미지 처리
 from PIL import Image
 
-
 # user defined
-
+import utils
 
 # Defines the GAN loss which uses either LSGAN or the regular GAN. When LSGAN is used, it is basically same as MSELoss,
 # but it abstracts away the need to create the target label tensor that has the same size as the input
@@ -41,7 +42,6 @@ class GANLoss(nn.Module):
     def __call__(self, input, target_is_real):
         target_tensor = self.get_target_tensor(input, target_is_real)
         return self.loss(input.squeeze(), target_tensor)
-
 
 def numeric_classes(tags_classes, dict_tags):
     num_classes = np.array([dict_tags.get(t) for t in tags_classes])
@@ -146,7 +146,7 @@ class AutoEncoder(nn.Module):
         steps_down = np.linspace(dim, hid_dim, num=nlayer + 1, dtype=np.int).tolist()
         modules = []
         for i in range(nlayer):
-            modules.append(nn.Linear(steps_down[i], steps_down[i + 1]), )
+            modules.append(nn.Linear(steps_down[i], steps_down[i + 1]),)
             modules.append(nn.ReLU(inplace=True))
         self.enc = nn.Sequential(*modules)
 
@@ -183,16 +183,12 @@ class SEM_PCYC(nn.Module):
         self.load_weight(self.image_model, params_model['path_image_model'], 'image')
         # Semantic model embedding
         self.sem = []
-        sem_temp = []
         for f in params_model['files_semantic_labels']:
-            sem_temp.append(np.load(f, allow_pickle=True).item())
-        try:
-            self.sem =[dict(sem_temp[0], **sem_temp[1])]
-            print(self.sem)
-        except Exception as e:
-            print('this is may be production mode')
-            print(e)
+            self.sem.append(np.load(f, allow_pickle=True).item())
         self.dict_clss = params_model['dict_clss']
+        print('--------------self.dem----------------')
+        # print(self.sem)
+        print('Done')
 
         print('Initializing trainable models...', end='')
         # Generators
@@ -320,16 +316,16 @@ class SEM_PCYC(nn.Module):
 
         # Adversarial loss with flipped labels (false -> true)
         loss_gen_adv = self.criterion_gan(self.disc_se(self.im2se_em), True) + \
-                       self.criterion_gan(self.disc_se(self.sk2se_em), True) + \
-                       self.criterion_gan(self.disc_im(self.se2im_em), True) + \
-                       self.criterion_gan(self.disc_sk(self.se2sk_em), True)
+            self.criterion_gan(self.disc_se(self.sk2se_em), True) + \
+            self.criterion_gan(self.disc_im(self.se2im_em), True) + \
+            self.criterion_gan(self.disc_sk(self.se2sk_em), True)
         loss_gen_adv = self.lambda_gen_adv * loss_gen_adv
 
         # Cycle consistency loss
         loss_gen_cyc = self.lambda_im * self.criterion_cyc(self.im_em_hat, self.im_fe) + \
-                       self.lambda_sk * self.criterion_cyc(self.sk_em_hat, self.sk_fe) + \
-                       self.lambda_se * (self.criterion_cyc(self.se_em_hat1, self.se_em_enc.detach()) +
-                                         self.criterion_cyc(self.se_em_hat2, self.se_em_enc.detach()))
+            self.lambda_sk * self.criterion_cyc(self.sk_em_hat, self.sk_fe) + \
+            self.lambda_se * (self.criterion_cyc(self.se_em_hat1, self.se_em_enc.detach()) +
+                              self.criterion_cyc(self.se_em_hat2, self.se_em_enc.detach()))
         loss_gen_cyc = self.lambda_gen_cyc * loss_gen_cyc
 
         # Classification loss
@@ -358,20 +354,20 @@ class SEM_PCYC(nn.Module):
 
         # Semantic discriminator loss
         loss_disc_se = 2 * self.criterion_gan(self.disc_se(self.se_em_enc), True) + \
-                       self.criterion_gan(self.disc_se(self.im2se_em), False) + \
-                       self.criterion_gan(self.disc_se(self.sk2se_em), False)
+            self.criterion_gan(self.disc_se(self.im2se_em), False) + \
+            self.criterion_gan(self.disc_se(self.sk2se_em), False)
         loss_disc_se = self.lambda_disc_se * loss_disc_se
         loss_disc_se.backward(retain_graph=True)
 
         # Sketch discriminator loss
         loss_disc_sk = self.criterion_gan(self.disc_sk(self.sk_fe), True) + \
-                       self.criterion_gan(self.disc_sk(self.se2sk_em), False)
+            self.criterion_gan(self.disc_sk(self.se2sk_em), False)
         loss_disc_sk = self.lambda_disc_sk * loss_disc_sk
         loss_disc_sk.backward(retain_graph=True)
 
         # Image discriminator loss
         loss_disc_im = self.criterion_gan(self.disc_im(self.im_fe), True) + \
-                       self.criterion_gan(self.disc_im(self.se2im_em), False)
+            self.criterion_gan(self.disc_im(self.se2im_em), False)
         loss_disc_im = self.lambda_disc_im * loss_disc_im
         loss_disc_im.backward()
 
@@ -389,31 +385,27 @@ class SEM_PCYC(nn.Module):
 
     def optimize_params(self, sk, im, cl):
 
-        try:
+        # Get numeric classes
+        num_cls = torch.from_numpy(utils.numeric_classes(cl, self.dict_clss)).cuda()
+        
+        # Get the semantic embeddings for cl
+        se = np.zeros((len(cl), self.sem_dim), dtype=np.float32)
+        for i, c in enumerate(cl):
+            se_c = np.array([], dtype=np.float32)
+            for s in self.sem:
+                se_c = np.concatenate((se_c, s.get(c).astype(np.float32)), axis=0)
+            se[i] = se_c
+        se = torch.from_numpy(se)
+        if torch.cuda.is_available:
+            se = se.cuda()
 
-            # Get numeric classes
-            num_cls = torch.from_numpy(numeric_classes(cl, self.dict_clss)).cuda()
+        # Forward pass
+        self.forward(sk, im, se)
 
-            # Get the semantic embeddings for cl
-            se = np.zeros((len(cl), self.sem_dim), dtype=np.float32)
-            for i, c in enumerate(cl):
-                se_c = np.array([], dtype=np.float32)
-                for s in self.sem:
-                    se_c = np.concatenate((se_c, s.get(c).astype(np.float32)), axis=0)
-                se[i] = se_c
-            se = torch.from_numpy(se)
-            if torch.cuda.is_available:
-                se = se.cuda()
+        # Backward pass
+        loss = self.backward(se, num_cls)
 
-            # Forward pass
-            self.forward(sk, im, se)
-
-            # Backward pass
-            loss = self.backward(se, num_cls)
-
-            return loss
-        except Exception as e:
-            print(e)
+        return loss
 
     def get_sketch_embeddings(self, sk):
 
@@ -429,24 +421,23 @@ class SEM_PCYC(nn.Module):
 
         return im_em
 
-
 class DataGeneratorImage(data.Dataset):
-    def __init__(self, dataset, root, photo_dir, photo_sd, fls_im, clss_im, transforms=None):
-        self.dataset = dataset
-        self.root = root
-        self.photo_dir = photo_dir
-        self.photo_sd = photo_sd
-        self.fls_im = fls_im
-        self.clss_im = clss_im
-        self.transforms = transforms
+  def __init__(self, dataset, root, photo_dir, photo_sd, fls_im, clss_im, transforms=None):
 
-    def __getitem__(self, item):
-        im = Image.open(os.path.join(self.root, self.photo_dir, self.photo_sd, self.fls_im[item])).convert(
-            mode='RGB')
-        cls_im = self.clss_im[item]
-        if self.transforms is not None:
-            im = self.transforms(im)
-        return im, cls_im
+    self.dataset = dataset
+    self.root = root
+    self.photo_dir = photo_dir
+    self.photo_sd = photo_sd
+    self.fls_im = fls_im
+    self.clss_im = clss_im
+    self.transforms = transforms
 
-    def __len__(self):
-        return len(self.fls_im)
+  def __getitem__(self, item):
+    im = Image.open(os.path.join(self.root, self.photo_dir, self.photo_sd, self.fls_im[item])).convert(mode='RGB')
+    cls_im = self.clss_im[item]
+    if self.transforms is not None:
+        im = self.transforms(im)
+    return im, cls_im
+
+  def __len__(self):
+      return len(self.fls_im)
