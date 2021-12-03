@@ -46,12 +46,12 @@ plus_word = {}
 plus_word = create_wordemb(root_path)
 
 # 생성한 dict를 npy로 만들기
-np.save('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words_test.npy', plus_word)
+np.save('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', plus_word)
 print('npy create!')
 
 '''
 # 생성한 npy 불러오기 - 클래스 확인용
-load_dict = np.load('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words_test.npy', allow_pickle=True)
+load_dict = np.load('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', allow_pickle=True)
 
 load_dict_list = load_dict.tolist()
 dict_list = []
