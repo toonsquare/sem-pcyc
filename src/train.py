@@ -61,12 +61,21 @@ def main():
     args.semantic_models = sorted(args.semantic_models)
     model_name = '+'.join(args.semantic_models)
     root_path = os.path.join(path_dataset, args.dataset)
+
+    # vggnet sketch model
+    # path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch', 'VGGNet')
+    # imagenet sketch model
     path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
     print('-----path_sketch_model-----')
     print(path_sketch_model)
-    path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image')
+
+    # vggnet image model
+    path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image', 'VGGNet')
+    # imagenet image model
+    # path_image_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'image')
     print('-----path_image_model-----')
     print(path_image_model)
+
     path_cp = os.path.join(path_aux, 'CheckPoints', args.dataset, str_aux, model_name, str(args.dim_out))
     print('-----path_cp-----')
     print(path_cp)
@@ -77,8 +86,10 @@ def main():
     for f in args.semantic_models:
         fi = os.path.join(path_aux, 'Semantic', args.dataset, f + '.npy')
         files_semantic_labels.append(fi)
-        sem_dim = list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
-    print('Sem dim : {}'.format(sem_dim))
+        sem_dim += list(np.load(fi, allow_pickle=True).item().values())[0].shape[0]
+
+    print('files_semantic_labels: {}'.format(files_semantic_labels))    
+    print('sem_dim: {}'.format(sem_dim))
     print('Checkpoint path: {}'.format(path_cp))
     print('Logger path: {}'.format(path_log))
     print('Result path: {}'.format(path_results))
