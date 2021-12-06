@@ -146,12 +146,12 @@ class MakeNPY():
         d = {l: i for i, l in enumerate(texts)}
         return d
     def SEM_PCYC(self):
-        path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch', 'VGGNet')
-        path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image', 'VGGNet')
+        # path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch', 'VGGNet')
+        # path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image', 'VGGNet')
 
         # imagenet model
-        # path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
-        # path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
+        path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
+        path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
         dict_clss = self._create_dict_texts(self.splits['tr_clss_im'])
 
         files_semantic_labels = []

@@ -202,10 +202,18 @@ class ModelHandler(BaseHandler):
         print('model_name : ' + model_name)
         # 데이터 셋 경로
         self.root_path = root_path = os.path.join(path_dataset, dataset)
+
         # 스케치 모델 경로
+        # intersection sketch model
+        # path_sketch_model = os.path.join(path_aux, 'CheckPoints', dataset, 'sketch', 'VGGNet')
+        # imagenet sketch model
         path_sketch_model = os.path.join(path_aux, 'CheckPoints', dataset, 'sketch')
         print('path_sketch_model : ' + path_sketch_model)
+
         # 썸네일 모델 경로
+        # intersection image model
+        # path_image_model = os.path.join(path_aux, 'CheckPoints', dataset, 'image', 'VGGNet')
+        # imagenet image model
         path_image_model = os.path.join(path_aux, 'CheckPoints', dataset, 'image')
         print('path_image_model : ' + path_image_model)
 

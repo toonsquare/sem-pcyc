@@ -63,9 +63,9 @@ def main():
     root_path = os.path.join(path_dataset, args.dataset)
 
     # vggnet sketch model
-    # path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch', 'VGGNet')
+    path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch', 'VGGNet')
     # imagenet sketch model
-    path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
+    # path_sketch_model = os.path.join(path_aux, 'CheckPoints', args.dataset, 'sketch')
     print('-----path_sketch_model-----')
     print(path_sketch_model)
 
