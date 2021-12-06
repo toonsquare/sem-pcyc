@@ -218,6 +218,7 @@ def load_files_tuberlin_zeroshot(root_path, photo_dir='images', sketch_dir='sket
     fls_sk = glob.glob(os.path.join(path_sk, '*', '*'))
     fls_sk = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_sk])
     clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
+    print('fls_sk.size : {}'.format(len(fls_sk)))
 
     # all the unique classes
     classes = np.unique(clss_im)
@@ -372,3 +373,23 @@ def accuracy(output, target, topk=(1,)):
         correct_k = correct[:k].view(-1).float().sum(0)
         res.append(correct_k.mul_(100.0 / batch_size))
     return res
+
+
+def get_synonym():
+    syn = dict()
+    syn['axe'] = 'hatchet'
+    syn['bear_animal'] = 'bear'
+    syn['beer_mug'] = 'stein'
+    syn['bottle_opener'] = 'opener'
+    syn['computer_monitor'] = 'monitor'
+    syn['crane_machine'] = 'crane'
+    syn['head_phones'] = 'headphones'
+    syn['hot_dog'] = 'hotdog'
+    syn['mouse_animal'] = 'rat'
+    syn['paper_clip'] = 'paperclip'
+    syn['power_outlet'] = 'socket'
+    syn['race_car'] = 'racecar'
+    syn['sponge_bob'] = 'spongebob'
+    syn['wrist_watch'] = 'watch'
+
+    return syn
