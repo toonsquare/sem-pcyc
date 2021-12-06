@@ -37,8 +37,8 @@ class MakeNPY():
                     random.seed(i)
                     idx_cp = random.sample(idx_cp, 100000)
                 idx1, idx2 = zip(*idx_cp)
-            elif set_type == 'service':
-                pass
+            # elif set_type == 'service':
+            #    pass
             else:
                 # remove duplicate sketches
                 if filter_sketch:
@@ -76,9 +76,10 @@ class MakeNPY():
         np.random.seed(0)
         tr_classes = np.random.choice(classes, int(0.88 * len(classes)), replace=False)
         va_classes = np.random.choice(np.setdiff1d(classes, tr_classes), int(0.06 * len(classes)), replace=False)
-        te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        # te_classes = np.setdiff1d(classes, np.union1d(tr_classes, va_classes))
+        te_classes = np.random.choice(classes, int(1 * len(classes)), replace=False)
 
-        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='service')
+        idx_tr_im, idx_tr_sk = self._get_coarse_grained_samples(tr_classes, fls_im, fls_sk, set_type='train')
         idx_va_im, idx_va_sk = self._get_coarse_grained_samples(va_classes, fls_im, fls_sk, set_type='valid')
         idx_te_im, idx_te_sk = self._get_coarse_grained_samples(te_classes, fls_im, fls_sk, set_type='test')
 
@@ -108,8 +109,8 @@ class MakeNPY():
 
         # 클래스명이 필요하기 때문에 image_test라는 튜플의 첫 번째 인덱스를 all_clss_im으로 저장
         # str_sim이 필요가 없지만 DataGeneratorImage 클래스에서는 clss_im이 사용되므로 일단 구해놓기
-        all_class_image = image_test["tr_clss_im"]
-        all_files_image = image_test["tr_fls_im"]
+        all_class_image = image_test["te_clss_im"]
+        all_files_image = image_test["te_fls_im"]
 
         print(all_files_image)
         transform = transforms.Compose([transforms.Resize((224, 224)), transforms.ToTensor()])
@@ -145,8 +146,12 @@ class MakeNPY():
         d = {l: i for i, l in enumerate(texts)}
         return d
     def SEM_PCYC(self):
-        path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
-        path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
+        path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch', 'VGGNet')
+        path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image', 'VGGNet')
+
+        # imagenet model
+        # path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
+        # path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
         dict_clss = self._create_dict_texts(self.splits['tr_clss_im'])
 
         files_semantic_labels = []
@@ -206,6 +211,7 @@ def main() :
     make_npy = MakeNPY()
     acc_im_em = make_npy.images_preprocessing()
     print("--------------END Embedding--------------")
+    print('size acc_im_em : {}'.format(len(acc_im_em)))
     print("\n")
     print("--------------START Saving--------------")
     np.save("/home/ubuntu/projects_jonathan/acc_im_em.npy", acc_im_em)
