@@ -48,10 +48,9 @@ jobs:
           source activate pytorch_p36
           cd ~
           pwd
-          scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/
+          scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
           echo file transfer success!!!!!!
-          ls -al
-          ssh ${{ secrets.AWS_ID }}@{{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
+          ssh ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
           cd /home/ubuntu/sem-pcyc
           ls -al
 
