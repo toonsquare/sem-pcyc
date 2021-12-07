@@ -9,32 +9,32 @@ jobs:
             cd ~
             cd /home/ubuntu/projects_jonathan
             echo torchserve start!!!!!
-            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
-            sleep 50s
-            echo model request start!!!!!
-            cd ~
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
-            sleep 5s
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
-            echo job 1 done!!!!!
+#            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+#            sleep 50s
+#            echo model request start!!!!!
+#            cd ~
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
+#            sleep 5s
+#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
+#            echo job 1 done!!!!!
             
   jobs2:
       needs: jobs1
@@ -43,7 +43,8 @@ jobs:
         - run: |
             source activate pytorch_p36
             cd ~
-            echo now job2
+            pwd
+            echo ${{ secret.PEM_KEY }}
 
     
       
