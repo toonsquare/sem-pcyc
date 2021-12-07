@@ -9,6 +9,7 @@ jobs:
             cd ~
             cd /home/ubuntu/projects_jonathan
             torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+            sleep 30s
             
   jobs2:
       needs: jobs1
