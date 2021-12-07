@@ -46,7 +46,7 @@ jobs:
           source activate pytorch_p36
           cd ~
           pwd
-          echo ${{ secret.PEM_KEY }}
+          echo ${{ secrets.PEM_KEY }}
 
     
       
