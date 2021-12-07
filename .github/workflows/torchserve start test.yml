@@ -7,10 +7,8 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: |
-        whoami
         pwd
-        cd ..
-        cd ..
+        cd /
         pwd
 
     
