@@ -9,7 +9,7 @@ jobs:
           cd ~
           cd /home/ubuntu/projects_jonathan
           pwd
-          torchserve --ts-config ./ts/config.properties --background --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+          torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
           cd ~
           curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
           
