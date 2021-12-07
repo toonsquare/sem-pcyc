@@ -9,7 +9,6 @@ jobs:
             cd ~
             cd /home/ubuntu/projects_jonathan
             torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
-            sleep 30s
             
   jobs2:
       needs: jobs1
@@ -17,9 +16,9 @@ jobs:
       steps:
         - run: |
             source activate pytorch_p36
-            echo you can do it
             cd ~
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+            pwd
+            # curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
 
     
       
