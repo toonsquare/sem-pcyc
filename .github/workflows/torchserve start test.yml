@@ -6,9 +6,11 @@ jobs:
   
     steps:
     - uses: actions/checkout@v2
-    - run: whoami
-    - run: cd /home/ubuntu/projects_jonathan
-    - run: pwd
-#     - run: torchserve --ts-config ./ts/config.properties --foreground --start --model-store ./model-store --models sem_pcyc=sem_pcyc3.0.mar
+    - run: |
+        whoami
+        pwd
+        cd ..
+        cd ..
+        pwd
 
     
