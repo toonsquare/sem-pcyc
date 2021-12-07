@@ -4,13 +4,15 @@ jobs:
   build: 
     runs-on: self-hosted
     steps:
-      - name: torchserve start
       - run: |
           source activate pytorch_p36
           cd ~
           cd /home/ubuntu/projects_jonathan
           pwd
           torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+          
+      - run: |
+          echo do it
           
     
       
