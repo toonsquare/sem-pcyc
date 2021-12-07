@@ -5,6 +5,7 @@ jobs:
     runs-on: self-hosted
   
     steps:
+    - name: torchserve start test
     - uses: actions/checkout@v2
     - run: |
         source activate pytorch_p36
@@ -12,9 +13,11 @@ jobs:
         cd /home/ubuntu/projects_jonathan
         pwd
         torchserve --ts-config ./ts/config.properties --foreground --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+        
+    - name: torchserve request test
+    - uses: actions/checkout@v2
     - run: |
+        source activate pytorch_p36
         cd ~
         curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
         
-
-    
