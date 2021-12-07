@@ -46,6 +46,9 @@ jobs:
           AWS_ID: ${{ secrets.AWS_ID }}
         run: |
           source activate pytorch_p36
+          echo ${{ secrets.PEM_KEY }}
+          echo ${{ secrets.AWS_IP }}
+          echo ${{ secrets.AWS_ID }}
           cd ~
           pwd
           scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/
