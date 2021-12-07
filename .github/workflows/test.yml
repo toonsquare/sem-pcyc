@@ -42,6 +42,8 @@ jobs:
       steps: 
       - env: 
           PEM_KEY: ${{ secrets.PEM_KEY }}
+          AWS_IP: ${{ secrets.AWS_IP }}
+          AWS_ID: ${{ secrets.AWS_ID }}
         run: |
           source activate pytorch_p36
           cd ~
@@ -49,7 +51,7 @@ jobs:
           echo ${{ secrets.PEM_KEY }}
           ssh ubuntu@13.209.76.135 -i ./${{ secrets.PEM_KEY }}
           pwd
-          docker ps
+          scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/
           
 
     
