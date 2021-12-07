@@ -7,7 +7,9 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: |
+        conda list
         source activate pytorch_p36
+        conda list
         pwd
         cd ~
         pwd
