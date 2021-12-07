@@ -12,16 +12,25 @@ jobs:
             sleep 50s
             cd ~
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
             
-#   jobs2:
-#       needs: jobs1
-#       runs-on: self-hosted
-#       steps:
-#         - run: |
-#             source activate pytorch_p36
-#             cd ~
-#             pwd
-#             # curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+  jobs2:
+      needs: jobs1
+      runs-on: self-hosted
+      steps:
+        - run: |
+            source activate pytorch_p36
+            cd ~
+            echo now job2
 
     
       
