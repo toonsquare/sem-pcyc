@@ -13,6 +13,10 @@ jobs:
         pwd
         cd ~
         pwd
-        nvidia-smi
+        torchserve --ts-config ./ts/config.properties --foreground --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+    - run: |
+        cd ~
+        curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+        
 
     
