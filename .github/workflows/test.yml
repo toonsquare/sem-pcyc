@@ -9,30 +9,16 @@ jobs:
             cd ~
             cd /home/ubuntu/projects_jonathan
             torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            echo you can do it
-            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
             
-#   jobs2:
-#       needs: jobs1
-#       runs-on: self-hosted
-#       steps:
-#         - run: |
-#             echo you can do it
-#             cd ~
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+  jobs2:
+      needs: jobs1
+      runs-on: self-hosted
+      steps:
+        - run: |
+            source activate pytorch_p36
+            echo you can do it
+            cd ~
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
 
     
       
