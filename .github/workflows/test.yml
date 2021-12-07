@@ -1,20 +1,23 @@
 name: GitHub Actions self hosted runner
 on: workflow_dispatch
 jobs:
-  build: 
-    name: torchserve start with self hosted runner 
-    runs-on: self-hosted
-    steps:
-      - run: |
-          source activate pytorch_p36
-          cd ~
-          cd /home/ubuntu/projects_jonathan
-          pwd
-          torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
-          
-      - run: |
-          echo do it
-          
+  jobs1:
+      runs-on: self-hosted
+      steps:
+        - run: |
+            source activate pytorch_p36
+            cd ~
+            cd /home/ubuntu/projects_jonathan
+            pwd
+            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
+            
+  jobs2:
+      needs: jobs1
+      runs-on: self-hosted
+      steps:
+        - run: |
+            echo you can do it
+
     
       
 
