@@ -7,10 +7,7 @@ jobs:
     steps:
     - uses: actions/checkout@v2
     - run: |
-        conda list
         source activate pytorch_p36
-        conda list
-        pwd
         cd ~
         pwd
         torchserve --ts-config ./ts/config.properties --foreground --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
