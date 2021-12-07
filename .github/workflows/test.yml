@@ -47,6 +47,10 @@ jobs:
           cd ~
           pwd
           echo ${{ secrets.PEM_KEY }}
+          ssh ubuntu@13.209.76.135 -i ./${{ secrets.PEM_KEY }}
+          pwd
+          docker ps
+          
 
     
       
