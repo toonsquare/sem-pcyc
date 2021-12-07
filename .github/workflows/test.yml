@@ -49,6 +49,8 @@ jobs:
           cd ~
           pwd
           scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/
+          echo file transfer success!!!!!!
+          ls -al
           ssh ${{ secrets.AWS_ID }}@{{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
           cd /home/ubuntu/sem-pcyc
           ls -al
