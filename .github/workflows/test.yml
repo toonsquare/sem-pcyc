@@ -48,11 +48,8 @@ jobs:
           source activate pytorch_p36
           cd ~
           pwd
-          echo ${{ secrets.PEM_KEY }}
-          ssh ubuntu@13.209.76.135 -i ./${{ secrets.PEM_KEY }}
-          pwd
           scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/
-          
+          # ssh ${{ secrets.AWS_ID }}@{{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
 
     
       
