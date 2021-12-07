@@ -1,0 +1,15 @@
+name: GitHub Actions self hosted runner
+on: workflow_dispatch
+jobs:
+  Explore-GitHub-Actions:
+    runs-on: self-hosted
+    steps:
+      - run: |
+          source activate pytorch_p36
+          cd ~
+          cd /home/ubuntu/projects_jonathan
+          pwd
+          
+        
+
+
