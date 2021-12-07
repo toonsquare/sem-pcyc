@@ -1,0 +1,16 @@
+name: self hosted runner test
+on: workflow_dispatch
+jobs:
+
+  build:
+    runs-on: self-hosted
+    steps:
+     - name: torchserve start test
+     - uses: actions/checkout@v2
+     - run: 
+        source activate pytorch_p36
+        cd ~
+        cd /home/ubuntu/projects_jonathan
+        pwd
+        
+    
