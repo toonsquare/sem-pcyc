@@ -6,7 +6,6 @@ jobs:
     runs-on: self-hosted
     steps:
      - name: torchserve start test
-     - uses: actions/checkout@v2
      - run: 
         source activate pytorch_p36
         cd ~
