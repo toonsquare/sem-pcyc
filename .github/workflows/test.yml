@@ -51,7 +51,10 @@ jobs:
           scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
           echo file transfer success!!!!!!
           ssh ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
-          ls -al
+          ls
+          cd ~ 
+          cd /home/ubuntu/sem-pcyc
+          ls
 #          cd /home/ubuntu/sem-pcyc
 #          ls -al
 
