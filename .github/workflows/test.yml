@@ -4,6 +4,7 @@ jobs:
   build: 
     runs-on: self-hosted
     steps:
+      - name: torchserve start
       - run: |
           source activate pytorch_p36
           cd ~
@@ -11,9 +12,10 @@ jobs:
           pwd
           torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
           
-      - run: |
-          cd ~
-          curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+    
+      
+
+  
         
 
 
