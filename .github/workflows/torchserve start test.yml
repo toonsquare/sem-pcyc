@@ -15,7 +15,6 @@ jobs:
         torchserve --ts-config ./ts/config.properties --foreground --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
         
     - name: torchserve request test
-    - uses: actions/checkout@v2
     - run: |
         source activate pytorch_p36
         cd ~
