@@ -6,18 +6,29 @@ jobs:
     name: ssh_Test
     runs-on: self-hosted
     steps:
+    - env: 
+          PEM_KEY: ${{ secrets.PEM_KEY }}
+          AWS_IP: ${{ secrets.AWS_IP }}
+          AWS_ID: ${{ secrets.AWS_ID }}
+        
     - name: check
       run: |
         cd ~
         pwd
+        ssh ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
+        sleep 5s
+        pwd
         
-    - name: executing remote ssh
-      uses: appleboy/ssh-action@master
-      with:
-        host: ${{ secrets.AWS_IP }}
-        username: ${{ secrets.AWS_ID }}
-        key: ${{ secrets.PEM_KEY }}
-        port: 22
-        script: |
-          pwd
-          whoami
+        
+        
+        
+#     - name: executing remote ssh
+#       uses: appleboy/ssh-action@master
+#       with:
+#         host: ${{ secrets.AWS_IP }}
+#         username: ${{ secrets.AWS_ID }}
+#         key: ${{ secrets.PEM_KEY }}
+#         port: 22
+#         script: |
+#           pwd
+#           whoami
