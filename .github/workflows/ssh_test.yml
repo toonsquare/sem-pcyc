@@ -10,8 +10,6 @@ jobs:
           PEM_KEY: ${{ secrets.PEM_KEY }}
           AWS_IP: ${{ secrets.AWS_IP }}
           AWS_ID: ${{ secrets.AWS_ID }}
-        
-    - name: check
       run: |
         cd ~
         pwd
