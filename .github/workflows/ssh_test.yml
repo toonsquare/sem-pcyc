@@ -11,7 +11,7 @@ jobs:
       with:
         host: ${{ secrets.AWS_IP }}
         username: ${{ secrets.AWS_ID }}
-        key_path: ${{ secrets.PEM_KEY }}
+        key_path: ${{ secrets.PEM_KEY_PATH }}
         port: 22
         script: |
           pwd
