@@ -58,6 +58,7 @@ jobs:
         run: |
           source activate pytorch_p36
           echo file transfer start!!!!!!!!!!!
+#         train이 돈다면 경로 다시 바꿔줘야 함, nipa 환경을 aws 환경과 동일하게 맞추는 중          
 #         echo word2vec.npy file transfer
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
 #         echo image_embedding.npy file transfer
