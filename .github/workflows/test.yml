@@ -72,8 +72,18 @@ jobs:
 
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
 #         echo file transfer success!!!!!!
-#         문제는 ssh로 접속은 가능하지만 다음 command로 넘어갔을 때 ssh접속을 끊고 nipa ssh에서 명령을 실행한다는 점이다.
-#         일단 job2는 scp로 파일 전송만 하는 부분이기 때문에 확인은 했고 코드만 작성하고 넘어가자
+
+  jobs3:
+      needs: jobs2
+      runs-on: self-hosted
+      steps: 
+      - env: 
+          AWS_IP: ${{ secrets.AWS_IP }}
+        run: |
+          source activate pytorch_p36
+          # 모델 확인
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+          
 
     
       
