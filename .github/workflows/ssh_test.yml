@@ -1,11 +1,14 @@
 name: ssh test
 on: workflow_dispatch
 jobs:
-
   build:
-    name: ssh_Test
     runs-on: self-hosted
     steps:
+    - name: change directory
+      run: |
+        cd ~
+        pwd
+        
     - name: executing remote ssh
       uses: appleboy/ssh-action@master
       with:
