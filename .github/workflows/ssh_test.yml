@@ -14,8 +14,8 @@ jobs:
         cd ~
         pwd
         ssh ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
-        sleep 10s
-        ls -al
+        sleep 30s
+        ls
         
         
         
