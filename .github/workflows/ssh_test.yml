@@ -6,6 +6,11 @@ jobs:
     name: ssh_Test
     runs-on: self-hosted
     steps:
+    - name: check
+      run: |
+        cd ~
+        pwd
+        
     - name: executing remote ssh
       uses: appleboy/ssh-action@master
       with:
