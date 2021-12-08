@@ -13,26 +13,37 @@ jobs:
 #            sleep 35s
 #            echo model request start!!!!!
 #            cd ~
+#            echo request guitar
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
 #            sleep 3s
+#            echo request backyard
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
 #            sleep 3s
+#            echo request balloon
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
 #            sleep 3s
+#            echo request car
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
 #            sleep 3s
+#            echo request house
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
 #            sleep 3s
+#            echo request closet
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
 #            sleep 3s
+#            echo request pavillon
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
 #            sleep 3s
+#            echo request school
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
 #            sleep 3s
+#            echo request worktable
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
 #            sleep 3s
+#            echo request bike_racks
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
 #            sleep 3s
+#            echo request seats
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
 #            echo job 1 done!!!!!
             
@@ -50,6 +61,8 @@ jobs:
           pwd
           scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
           echo file transfer success!!!!!!
+          cd sem-pcyc
+          ls
 #          ssh ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }} -i ./${{ secrets.PEM_KEY }}
 #          ls
 #          cd ~ 
