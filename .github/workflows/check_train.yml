@@ -9,7 +9,10 @@ jobs:
         run: |
             source activate pytorch_p36
             cd ~
-            curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+            curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > version
+            cat version
+            cat version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}'
+            
 #            cd /home/ubuntu/projects_jonathan/src            
 #            echo SEM-PCYC model train start!!!!!!!!!!!!!
 #            python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
