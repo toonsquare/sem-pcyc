@@ -10,7 +10,7 @@ jobs:
             source activate pytorch_p36
             cd ~
             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > version
-            version | grep modelVersion | grep -o [0-9\.]* > myVersion
+            cat version | grep modelVersion | grep -o [0-9\.]* > myVersion
             awk '{printf "%.1f", $1 + 1}' myVersion
             echo plz...
             $MODEL_VERSION
