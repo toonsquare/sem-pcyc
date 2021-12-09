@@ -1,0 +1,34 @@
+name: SEM-PCYC train test
+on: workflow_dispatch
+jobs:
+  jobs1:
+      runs-on: self-hosted
+      steps:
+        - run: |
+            source activate pytorch_p36
+            cd ~
+            cd /home/ubuntu/projects_jonathan/src
+            echo Create new_plus_words.npy!!!!!!!!!!!!!!
+            python newclass_word2vec.py
+            echo Create new_plus_words.npy done!!!!!!!!!!!!!!
+            
+            echo SEM-PCYC model train start!!!!!!!!!!!!!
+            python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
+            echo SEM-PCYC model train done!!!!!!!!!!!!!!
+            
+            echo Create acc_im_em.npy!!!!!!!!!!!!!!
+            python mk_image_emd_npy.py
+            echo Create acc_im_em.npy done!!!!!!!!!!!!!!
+            
+            echo Create sem_pcyc.mar!!!!!!!!!!!!!!
+            cd ..
+            # 일단 버전명 수동으로 바꿔주기
+            torch-model-archiver --model-name sem_pcyc3.0 --version 3.0 --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
+            echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
+            mv -v ./sem_pcyc3.0.mar ./model-store
+            echo Move sem_pcyc.mar to model store!!!!!!!!!!!!!!
+            
+            
+            
+            
+            
