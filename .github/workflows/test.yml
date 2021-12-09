@@ -26,15 +26,15 @@ jobs:
             #echo SEM-PCYC model train done!!!!!!!!!!!!!!
             
             # Image embedding 생성
-            echo Create acc_im_em.npy!!!!!!!!!!!!!!
-            python mk_image_emd_npy.py
-            echo Create acc_im_em.npy done!!!!!!!!!!!!!!
+            #echo Create acc_im_em.npy!!!!!!!!!!!!!!
+            #python mk_image_emd_npy.py
+            #echo Create acc_im_em.npy done!!!!!!!!!!!!!!
             
             # 새로운 버전의 sem_pcyc.mar 생성
-            #echo Create sem_pcyc.mar!!!!!!!!!!!!!!
-            #cd ..
-            #torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
-            #echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
-            #mv -v ./sem_pcyc3.0.mar ./model-store
-            #echo Move sem_pcyc.mar to model store!!!!!!!!!!!!!!
+            echo Create sem_pcyc.mar!!!!!!!!!!!!!!
+            cd ..
+            torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
+            echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
+            mv -v ./sem_pcyc3.0.mar ./model-store
+            echo Move sem_pcyc.mar to model store!!!!!!!!!!!!!!
             
