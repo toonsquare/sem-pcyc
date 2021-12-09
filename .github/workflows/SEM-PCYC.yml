@@ -42,13 +42,18 @@ jobs:
   jobs2:
       needs: jobs1
       runs-on: self-hosted
+      env: 
+          AWS_IP: ${{ secrets.AWS_IP }}
       steps:
         - run: |
             source activate pytorch_p36
             cd ~
+            # Version 변수 설정
+            curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+            myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+            
             cd /home/ubuntu/projects_jonathan
             echo torchserve start!!!!!
-            echo "다음에 등록할 버전은 $myVersion 버전입니다."
 #            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
 #            sleep 35s
 #            echo model request start!!!!!
@@ -97,6 +102,9 @@ jobs:
           AWS_ID: ${{ secrets.AWS_ID }}
         run: |
           source activate pytorch_p36
+          # Version 변수 설정
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+          myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo file transfer start!!!!!!!!!!!
           echo "다음에 등록할 버전은 $myVersion 버전입니다."
 #         train이 돈다면 경로 다시 바꿔줘야 함, nipa 환경을 aws 환경과 동일하게 맞추는 중          
@@ -123,6 +131,9 @@ jobs:
           AWS_IP: ${{ secrets.AWS_IP }}
         run: |
           source activate pytorch_p36
+          # Version 변수 설정
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+          myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo model check
           echo "다음에 등록할 버전은 $myVersion 버전입니다."
 #          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
