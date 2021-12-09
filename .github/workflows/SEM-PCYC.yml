@@ -1,7 +1,46 @@
-name: SEM-PCYC self hosted runner
+name: SEM-PCYC CML
 on: workflow_dispatch
 jobs:
+
   jobs1:
+      runs-on: self-hosted
+      env: 
+          AWS_IP: ${{ secrets.AWS_IP }}
+      steps:
+        - run: |
+            source activate pytorch_p36
+            cd ~
+            # Version 변수 설정
+            curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+            myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+            echo "다음에 등록할 버전은 $myVersion 버전입니다."
+            
+            # 추가된 class에 대한 word2vec 진행
+            #cd /home/ubuntu/projects_jonathan/src
+            #echo Create new_plus_words.npy!!!!!!!!!!!!!!
+            #python newclass_word2vec.py
+            #echo Create new_plus_words.npy done!!!!!!!!!!!!!!
+            
+            # SEM-PCYC 학습 시작
+            #echo SEM-PCYC model train start!!!!!!!!!!!!!
+            #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
+            #echo SEM-PCYC model train done!!!!!!!!!!!!!!
+            
+            # Image embedding 생성
+            #echo Create acc_im_em.npy!!!!!!!!!!!!!!
+            #python mk_image_emd_npy.py
+            #echo Create acc_im_em.npy done!!!!!!!!!!!!!!
+            
+            # 새로운 버전의 sem_pcyc.mar 생성
+            #echo Create sem_pcyc.mar!!!!!!!!!!!!!!
+            #cd ..
+            #torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
+            #echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
+            #mv -v ./sem_pcyc3.0.mar ./model-store
+            #echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
+            
+  jobs2:
+      needs: jobs1
       runs-on: self-hosted
       steps:
         - run: |
@@ -9,6 +48,7 @@ jobs:
             cd ~
             cd /home/ubuntu/projects_jonathan
             echo torchserve start!!!!!
+            echo "다음에 등록할 버전은 $myVersion 버전입니다."
 #            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
 #            sleep 35s
 #            echo model request start!!!!!
@@ -47,8 +87,8 @@ jobs:
 #            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
 #            echo job 1 done!!!!!
             
-  jobs2:
-      needs: jobs1
+  jobs3:
+      needs: jobs2
       runs-on: self-hosted
       steps: 
       - env: 
@@ -58,6 +98,7 @@ jobs:
         run: |
           source activate pytorch_p36
           echo file transfer start!!!!!!!!!!!
+          echo "다음에 등록할 버전은 $myVersion 버전입니다."
 #         train이 돈다면 경로 다시 바꿔줘야 함, nipa 환경을 aws 환경과 동일하게 맞추는 중          
 #         echo word2vec.npy file transfer
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
@@ -74,8 +115,8 @@ jobs:
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
 #         echo file transfer success!!!!!!
 
-  jobs3:
-      needs: jobs2
+  jobs4:
+      needs: jobs3
       runs-on: self-hosted
       steps: 
       - env: 
@@ -83,6 +124,7 @@ jobs:
         run: |
           source activate pytorch_p36
           echo model check
+          echo "다음에 등록할 버전은 $myVersion 버전입니다."
 #          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
 #          echo model register
 #          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc2.0.mar"
