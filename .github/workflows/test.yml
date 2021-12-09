@@ -15,7 +15,7 @@ jobs:
             echo "다음에 등록할 버전은 $myVersion 버전입니다."
             
             # 추가된 class에 대한 word2vec 진행
-            #cd /home/ubuntu/projects_jonathan/src
+            cd /home/ubuntu/projects_jonathan/src
             #echo Create new_plus_words.npy!!!!!!!!!!!!!!
             #python newclass_word2vec.py
             #echo Create new_plus_words.npy done!!!!!!!!!!!!!!
