@@ -1,4 +1,3 @@
-name: version check
 on: workflow_dispatch
 jobs:
   jobs1:
@@ -10,4 +9,3 @@ jobs:
             source activate pytorch_p36
             cd ~
             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
-
