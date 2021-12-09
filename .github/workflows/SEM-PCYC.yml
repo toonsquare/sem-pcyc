@@ -16,28 +16,28 @@ jobs:
             echo "다음에 등록할 버전은 $myVersion 버전입니다."
             
             # 추가된 class에 대한 word2vec 진행
-            #cd /home/ubuntu/projects_jonathan/src
-            #echo Create new_plus_words.npy!!!!!!!!!!!!!!
-            #python newclass_word2vec.py
-            #echo Create new_plus_words.npy done!!!!!!!!!!!!!!
+            cd /home/ubuntu/projects_jonathan/src
+            echo Create new_plus_words.npy!!!!!!!!!!!!!!
+            python newclass_word2vec.py
+            echo Create new_plus_words.npy done!!!!!!!!!!!!!!
             
             # SEM-PCYC 학습 시작
-            #echo SEM-PCYC model train start!!!!!!!!!!!!!
+            echo SEM-PCYC model train start!!!!!!!!!!!!!
             #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
-            #echo SEM-PCYC model train done!!!!!!!!!!!!!!
+            echo SEM-PCYC model train done!!!!!!!!!!!!!!
             
             # Image embedding 생성
-            #echo Create acc_im_em.npy!!!!!!!!!!!!!!
-            #python mk_image_emd_npy.py
-            #echo Create acc_im_em.npy done!!!!!!!!!!!!!!
+            echo Create acc_im_em.npy!!!!!!!!!!!!!!
+            python mk_image_emd_npy.py
+            echo Create acc_im_em.npy done!!!!!!!!!!!!!!
             
             # 새로운 버전의 sem_pcyc.mar 생성
-            #echo Create sem_pcyc.mar!!!!!!!!!!!!!!
-            #cd ..
-            #torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
-            #echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
-            #mv -v ./sem_pcyc3.0.mar ./model-store
-            #echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
+            echo Create sem_pcyc.mar!!!!!!!!!!!!!!
+            cd ..
+            torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file ./src/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
+            echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
+            mv -v ./sem_pcyc3.0.mar ./model-store
+            echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
             
   jobs2:
       needs: jobs1
@@ -54,43 +54,43 @@ jobs:
             
             cd /home/ubuntu/projects_jonathan
             echo torchserve start!!!!!
-#            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc2.0.mar
-#            sleep 35s
-#            echo model request start!!!!!
-#            cd ~
-#            echo request guitar
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
-#            sleep 3s
-#            echo request backyard
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
-#            sleep 3s
-#            echo request balloon
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
-#            sleep 3s
-#            echo request car
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
-#            sleep 3s
-#            echo request house
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
-#            sleep 3s
-#            echo request closet
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
-#            sleep 3s
-#            echo request pavillon
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
-#            sleep 3s
-#            echo request school
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
-#            sleep 3s
-#            echo request worktable
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
-#            sleep 3s
-#            echo request bike_racks
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
-#            sleep 3s
-#            echo request seats
-#            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
-#            echo job 1 done!!!!!
+            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc$myVersion.mar
+            sleep 35s
+            echo model request start!!!!!
+            cd ~
+            echo request guitar
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+            sleep 3s
+            echo request backyard
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
+            sleep 3s
+            echo request balloon
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
+            sleep 3s
+            echo request car
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
+            sleep 3s
+            echo request house
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
+            sleep 3s
+            echo request closet
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
+            sleep 3s
+            echo request pavillon
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
+            sleep 3s
+            echo request school
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
+            sleep 3s
+            echo request worktable
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
+            sleep 3s
+            echo request bike_racks
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
+            sleep 3s
+            echo request seats
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
+            echo job 1 done!!!!!
             
   jobs3:
       needs: jobs2
@@ -106,9 +106,8 @@ jobs:
           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo file transfer start!!!!!!!!!!!
-          echo "다음에 등록할 버전은 $myVersion 버전입니다."
-#         train이 돈다면 경로 다시 바꿔줘야 함, nipa 환경을 aws 환경과 동일하게 맞추는 중          
-#         echo word2vec.npy file transfer
+
+          echo word2vec.npy file transfer && 경로 다시 확인해서 지정해주기!!!!!!!!!!!@#!@#!@$
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
 #         echo image_embedding.npy file transfer
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/
@@ -117,8 +116,8 @@ jobs:
 #         echo image & sketch dataset transfer
 #         scp -r -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/dataset/intersection/images/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
 #         scp -r -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/dataset/intersection/sketches/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/sketches
-#         echo sem_pcyc.mar file transfer && 중요!!version 명이 자동적으로 늘어나도록 바꿀 것!!!!!!!!!!!!!!!!!!!!!!!!!!!!!
-#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/projects_jonathan/model-store/sem_pcyc2.0.mar ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/model-store
+#         echo sem_pcyc.mar file transfer 
+#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/model-store
 
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
 #         echo file transfer success!!!!!!
@@ -135,12 +134,11 @@ jobs:
           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo model check
-          echo "다음에 등록할 버전은 $myVersion 버전입니다."
-#          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
 #          echo model register
-#          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc2.0.mar"
+#          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc$myVersion.mar"
 #          echo change default model
-#          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc2.0/set-default
+#          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc$myVersion/set-default
 #          echo new model check
 #          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
           
