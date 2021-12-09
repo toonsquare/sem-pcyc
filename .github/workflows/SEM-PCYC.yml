@@ -14,22 +14,26 @@ jobs:
             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
             myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
             echo "다음에 등록할 버전은 $myVersion 버전입니다."
+            echo ################################################################
             
             # 추가된 class에 대한 word2vec 진행
             cd /home/ubuntu/projects_jonathan/src
             echo Create new_plus_words.npy!!!!!!!!!!!!!!
             python newclass_word2vec.py
             echo Create new_plus_words.npy done!!!!!!!!!!!!!!
+            echo ################################################################
             
             # SEM-PCYC 학습 시작
             echo SEM-PCYC model train start!!!!!!!!!!!!!
             #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
             echo SEM-PCYC model train done!!!!!!!!!!!!!!
+            echo ################################################################
             
             # Image embedding 생성
             echo Create acc_im_em.npy!!!!!!!!!!!!!!
             python mk_image_emd_npy.py
             echo Create acc_im_em.npy done!!!!!!!!!!!!!!
+            echo ################################################################
             
             # 새로운 버전의 sem_pcyc.mar 생성
             echo Create sem_pcyc.mar!!!!!!!!!!!!!!
@@ -61,36 +65,55 @@ jobs:
             echo request guitar
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
             sleep 6s
+            echo ################################################################
+            
             echo request backyard
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
             sleep 6s
+            echo ################################################################
+            
             echo request balloon
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
             sleep 6s
+            echo ################################################################
+            
             echo request car
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
             sleep 6s
+            echo ################################################################
+            
             echo request house
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
             sleep 6s
+            echo ################################################################
+            
             echo request closet
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
             sleep 6s
+            echo ################################################################
+            
             echo request pavillon
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
             sleep 6s
+            echo ################################################################
+            
             echo request school
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
             sleep 6s
+            echo ################################################################
+            
             echo request worktable
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
             sleep 6s
+            echo ################################################################
+            
             echo request bike_racks
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
             sleep 6s
+            echo ################################################################
+            
             echo request seats
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
-            echo job 1 done!!!!!
             
   jobs3:
       needs: jobs2
@@ -134,7 +157,7 @@ jobs:
           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo model check
-          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+#          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
 #          echo model register
 #          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc$myVersion.mar"
 #          echo change default model
