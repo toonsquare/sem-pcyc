@@ -12,6 +12,7 @@ jobs:
             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > version
             cat version | grep modelVersion | grep -o [0-9\.]* > myVersion
             awk '{printf "%.1f", $1 + 1}' myVersion
+            
 
                         
 #            cd /home/ubuntu/projects_jonathan/src            
