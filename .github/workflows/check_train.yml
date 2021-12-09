@@ -8,7 +8,7 @@ jobs:
           AWS_IP: ${{ secrets.AWS_IP }}
           run: |
             source activate pytorch_p36
-#            cd ~
+            cd ~
 #            curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
 #            cd /home/ubuntu/projects_jonathan/src            
 #            echo SEM-PCYC model train start!!!!!!!!!!!!!
