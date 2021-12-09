@@ -8,6 +8,7 @@ jobs:
             source activate pytorch_p36
             cd ~
             cd /home/ubuntu/projects_jonathan/src
+            nvidia-smi
             echo SEM-PCYC model train start!!!!!!!!!!!!!
             python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
             echo SEM-PCYC model train done!!!!!!!!!!!!!!
