@@ -14,12 +14,7 @@ jobs:
             awk '{printf "%.1f", $1 + 1}' myVersion
             echo plz...
             $MODEL_VERSION
-            
-            
-            # 현재 모델의 버전 + 1 을 해서 가져옮
-            # cat version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}'
-            # $MODEL_VERSION
-            # cat $MODEL_VERSION_
+         
          env:
           MODEL_VERSION: awk '{printf "%.1f", $1 + 1}' myVersion
          
