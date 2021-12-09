@@ -55,39 +55,39 @@ jobs:
             cd /home/ubuntu/projects_jonathan
             echo torchserve start!!!!!
             torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc$myVersion.mar
-            sleep 35s
+            sleep 50s
             echo model request start!!!!!
             cd ~
             echo request guitar
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
-            sleep 3s
+            sleep 6s
             echo request backyard
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
-            sleep 3s
+            sleep 6s
             echo request balloon
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
-            sleep 3s
+            sleep 6s
             echo request car
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
-            sleep 3s
+            sleep 6s
             echo request house
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
-            sleep 3s
+            sleep 6s
             echo request closet
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
-            sleep 3s
+            sleep 6s
             echo request pavillon
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
-            sleep 3s
+            sleep 6s
             echo request school
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
-            sleep 3s
+            sleep 6s
             echo request worktable
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
-            sleep 3s
+            sleep 6s
             echo request bike_racks
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
-            sleep 3s
+            sleep 6s
             echo request seats
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
             echo job 1 done!!!!!
@@ -107,7 +107,7 @@ jobs:
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo file transfer start!!!!!!!!!!!
 
-          echo word2vec.npy file transfer && 경로 다시 확인해서 지정해주기!!!!!!!!!!!@#!@#!@$
+          #echo word2vec.npy file transfer && 경로 다시 확인해서 지정해주기!!!!!!!!!!!@#!@#!@$
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
 #         echo image_embedding.npy file transfer
 #         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/
