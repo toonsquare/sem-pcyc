@@ -3,15 +3,21 @@ on: workflow_dispatch
 jobs:
   jobs1:
       runs-on: self-hosted
-      steps:
-      - env: 
+      env: 
           AWS_IP: ${{ secrets.AWS_IP }}
-        run: |
+      steps:
+       - run: |
             source activate pytorch_p36
             cd ~
             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > version
+            # 현재 모델의 버전 + 1 을 해서 가져옮
             cat version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}'
-            
+            echo MODEL_VERSION
+         env:
+          MODEL_VERSION: cat version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}'
+          
+        
+                        
 #            cd /home/ubuntu/projects_jonathan/src            
 #            echo SEM-PCYC model train start!!!!!!!!!!!!!
 #            python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
