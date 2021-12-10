@@ -45,7 +45,7 @@ jobs:
             echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
             
   jobs2:
-      name: Request a model
+      name: Request
       needs: jobs1
       runs-on: self-hosted
       env: 
