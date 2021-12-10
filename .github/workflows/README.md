@@ -92,12 +92,10 @@ command를 실행하는 단계
 3. `kill -9 PID` 명령어로 프로세스를 종료
 프로세스 종료 후 바로 run이 되지 않았고 1 ~ 3분 정도 후 시도하니까 잘 연결이 되었다.
 
-## pipeline
-### Create files and train a model -> Request -> Transfer files -> Register a model
+## Pipeline
+![image](https://user-images.githubusercontent.com/82593754/145522822-4053356e-11cb-4599-9432-6805d38b6de5.png)
 
-
-
-
+![sem_pcyc_pipeline](https://user-images.githubusercontent.com/82593754/145527396-8791a0ae-eb4e-4f0a-a5df-8f70cd4bf7e4.jpg)
 
 
 
