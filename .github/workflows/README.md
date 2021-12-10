@@ -1,20 +1,20 @@
 # SEM PCYC CML
 
 ## github action의 runner
-runner는 이용자에게 부여된 가상 머신정도로 이해
+runner는 이용자에게 부여된 가상 머신정도로 이해  
 
 * host runner
 1. OS, 사전에 설치된 Package 및 도구, self hosted runner 애플리케이션에 대한 자동 업테이트를 진행
-2. github에서 관리 및 유지
+2. github에서 관리 및 유지  
 3. 모든 작업 실행에 대해 깨끗한 인스턴스를 제공함
 
 * self hosted runner
-1. 이미 비용을 지불한 클라우드 서비스 또는 로컬 머신을 사용할 수 있음
-2. 모든 작업 실행에 대해 깨끗한 인스턴스가 필요하지 않음
+1. 이미 비용을 지불한 클라우드 서비스 또는 로컬 머신을 사용할 수 있음  
+2. 모든 작업 실행에 대해 깨끗한 인스턴스가 필요하지 않음  
 3. github action과 함께 무료로 사용할 수 있지만, runner machine을 유지, 관리하는 비용은 사용자가 부담해야 한다.
 
-sem-pcyc 모델은 nipa 서버에서 작업을 수행하기 때문에 github의 host runner대신 self hosted runner를 사용하였음
-host runner를 사용할 경우 nipa에 출발지 ip를 등록해주어야 하기 때문에, nipa 서버를 self hosted ruuner로 사용하였음
+sem-pcyc 모델은 nipa 서버에서 작업을 수행하기 때문에 github의 host runner대신 self hosted runner를 사용하였음  
+host runner를 사용할 경우 nipa에 출발지 ip를 등록해주어야 하기 때문에, nipa 서버를 self hosted ruuner로 사용하였음  
 
 self hosted runner docs  
 https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#ip-addresses-of-github-hosted-runners  
