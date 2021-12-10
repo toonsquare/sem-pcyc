@@ -121,9 +121,10 @@ jobs:
           # Version 변수 설정
           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+          
+          cd ~
           echo file transfer start!!!!!!!!!!!
-
-          #echo word2vec.npy file transfer!!!!!!!!!!!!!
+          echo word2vec.npy file transfer!!!!!!!!!!!!!
           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
           echo image_embedding.npy file transfer!!!!!!!!!!!!!
           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/npy/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/npy
