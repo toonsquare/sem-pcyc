@@ -120,20 +120,18 @@ jobs:
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           echo file transfer start!!!!!!!!!!!
 
-          #echo word2vec.npy file transfer && 경로 다시 확인해서 지정해주기!!!!!!!!!!!
-#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
-#         echo image_embedding.npy file transfer
-#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/
-#         echo model_best.pth file transfer
-#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/model_best.pth ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/CheckPoints/intersection/word2vec-google-news/64
-#         echo image & sketch dataset transfer
-#         scp -r -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/dataset/intersection/images/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
-#         scp -r -i ./${{ secrets.PEM_KEY }} /home/ubuntu/sem_pcyc/dataset/intersection/sketches/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/sketches
-#         echo sem_pcyc.mar file transfer 
-#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/model-store
-
-#         scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/backyard.png ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/  # scp test용 파일 전송
-#         echo file transfer success!!!!!!
+          #echo word2vec.npy file transfer!!!!!!!!!!!!!
+          scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
+          echo image_embedding.npy file transfer!!!!!!!!!!!!!
+          scp -i ./${{ secrets.PEM_KEY }} /home/model-server/npy/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/npy
+          echo model_best.pth file transfer!!!!!!!!!!!!! 
+          scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64
+          echo image & sketch dataset transfer!!!!!!!!!!!!!
+          scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/images/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
+          scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/sketches/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/sketches
+          echo sem_pcyc.mar file transfer!!!!!!!!!!!!!
+          scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/model-store
+          echo file transfer success!!!!!!
 
   jobs4:
       needs: jobs3
@@ -146,13 +144,13 @@ jobs:
           # Version 변수 설정
           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
-          echo model check
-#          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
-#          echo model register
+          echo present model check!!!!!!!!!!!!!
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+#          echo model register!!!!!!!!!!!!!
 #          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc$myVersion.mar"
-#          echo change default model
+#          echo change default model!!!!!!!!!!!!!
 #          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc$myVersion/set-default
-#          echo new model check
+#          echo new model check!!!!!!!!!!!!!
 #          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
           
 
