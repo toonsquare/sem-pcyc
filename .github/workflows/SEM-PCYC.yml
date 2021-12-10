@@ -66,43 +66,43 @@ jobs:
             cd ~
             echo request guitar
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
-            sleep 6s
+            sleep 5s
             
             echo request backyard
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
-            sleep 6s
+            sleep 5s
             
             echo request balloon
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
-            sleep 6s
+            sleep 5s
             
             echo request car
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
-            sleep 6s
+            sleep 5s
             
             echo request house
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
-            sleep 6s
+            sleep 5s
             
             echo request closet
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
-            sleep 6s
+            sleep 5s
             
             echo request pavillon
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
-            sleep 6s
+            sleep 5s
             
             echo request school
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
-            sleep 6s
+            sleep 5s
             
             echo request worktable
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
-            sleep 6s
+            sleep 5s
             
             echo request bike_racks
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
-            sleep 6s
+            sleep 5s
             
             echo request seats
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
