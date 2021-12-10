@@ -154,7 +154,7 @@ jobs:
           echo model register!!!!!!!!!!!!!
           curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc$myVersion.mar"
           echo change default model!!!!!!!!!!!!!
-          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc$myVersion/set-default
+          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc/$myVersion/set-default
           echo new model check!!!!!!!!!!!!!
           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
           echo sem_pcyc$myVersion이 등록되었습니다.
