@@ -16,12 +16,17 @@ runner는 이용자에게 부여된 가상 머신정도로 이해
 sem-pcyc 모델은 nipa 서버에서 작업을 수행하기 때문에 github의 host runner대신 self hosted runner를 사용하였음
 host runner를 사용할 경우 nipa에 출발지 ip를 등록해주어야 하기 때문에, nipa 서버를 self hosted ruuner로 사용하였음
 
+self hosted runner docs  
+https://docs.github.com/en/actions/using-github-hosted-runners/about-github-hosted-runners#ip-addresses-of-github-hosted-runners  
+https://docs.github.com/en/actions/hosting-your-own-runners/about-self-hosted-runners  
+https://docs.github.com/en/actions/hosting-your-own-runners/adding-self-hosted-runners  
+
 ## github action - self hosted runner 등록 및 사용
 Setting 탭 -> Action 탭 -> Runners -> New self-hosted runner 선택
 
 1. 운영체제 선택 (window / linux / macOS)
 2. 사용하고자 하는 local machine 또는 가상 서버의 terminal로 들어가서 Download의 script 입력
-3. 그 아래 Configure의 script 입력
+3. 그 아래 Configure의 script 입력  
 (저는 machine name을 제외한 나머지 configure는 defalt로 설정하였습니다. 그리고 label은 yml파일을 작성할 때 runs-on에서 runner를 선택할 때 사용됩니다.)
 4. 생성된 action-runner 폴더로 이동한 후 ./run.sh를 입력하여 github action과 runner를 연결한다.
 
@@ -32,6 +37,7 @@ Setting 탭 -> Action 탭 -> Runners -> New self-hosted runner 선택
 * on  
 trigger가 되기 위한 event를 정하는 단계  
 대표적으로 push와 pull request가 있으며, 수동으로 작동할 수 있게 해주는 workflow dispathch가 있음  
+ML모델의 경우 코드의 수정이 많지 않기 때문에 event를 push나 pull requst로 주지 않고 workflow disptch를 사용하였다.  
 다양한 event: https://docs.github.com/en/actions/learn-github-actions/events-that-trigger-workflows
 
 * job  
@@ -76,14 +82,18 @@ run: echo aws_ip is ${{ secrets.AWS_IP }}
 command를 실행하는 단계  
 `run: | `으로 하면 여러 command를 입력해줄 수 있다.  
 
-command는 terminal에서 작동되는 것이므로 bash 쉘을 이용할 수 있다.
+### 이미 github action이 connect되어 있는 경우
 
+![git action과 연결이 끊어졌을 때](https://user-images.githubusercontent.com/82593754/145521300-d3acf0d2-e8de-4b3a-bcb7-e7159a74b4e4.png)
 
+이러한 경우 강제로 프로세스를 종료해주어야 한다.
+1. 터미널에서 `ps` 또는 `ps -ef`를 통해 프로세스의 목록을 확인
+2. run 프로세스를 찾은 후 PID를 확인
+3. `kill -9 PID` 명령어로 프로세스를 종료
+프로세스 종료 후 바로 run이 되지 않았고 1 ~ 3분 정도 후 시도하니까 잘 연결이 되었다.
 
-
-
-
-
+## pipeline
+### Create files and train a model -> Request -> Transfer files -> Register a model
 
 
 
