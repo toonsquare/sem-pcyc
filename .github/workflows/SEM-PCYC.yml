@@ -130,7 +130,7 @@ jobs:
           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/npy/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/npy
           echo model_best.pth file transfer!!!!!!!!!!!!! 
           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64
-          echo image & sketch dataset transfer!!!!!!!!!!!!!
+          echo image and sketch dataset transfer!!!!!!!!!!!!!
           scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/images/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
           scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/sketches/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/sketches
           echo sem_pcyc.mar file transfer!!!!!!!!!!!!!
