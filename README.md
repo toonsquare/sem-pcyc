@@ -425,7 +425,7 @@ curl http://localhost:8081/models/sem_pcyc/2.0
 
 등록이 잘 되었다면 version 2를 default모델로 지정해준다.  
 ```
-curl -v -X PUT http://localhost:8081/models/sem_pcyc2.0/set-default
+curl -v -X PUT http://localhost:8081/models/sem_pcyc/2.0/set-default
 ```
 
 
