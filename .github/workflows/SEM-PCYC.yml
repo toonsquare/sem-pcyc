@@ -3,7 +3,7 @@ on: workflow_dispatch
 jobs:
 
   jobs1:
-      name: Create files
+      name: Create files and trian a model
       runs-on: self-hosted
       env: 
           AWS_IP: ${{ secrets.AWS_IP }}
@@ -45,6 +45,7 @@ jobs:
             echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
             
   jobs2:
+      name: Request a model
       needs: jobs1
       runs-on: self-hosted
       env: 
@@ -107,6 +108,7 @@ jobs:
             curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
             
   jobs3:
+      name: Transfer files
       needs: jobs2
       runs-on: self-hosted
       steps: 
@@ -135,6 +137,7 @@ jobs:
           echo file transfer success!!!!!!
 
   jobs4:
+      name: Resgister a model
       needs: jobs3
       runs-on: self-hosted
       steps: 
