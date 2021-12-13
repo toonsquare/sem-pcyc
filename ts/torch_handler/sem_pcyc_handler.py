@@ -52,9 +52,9 @@ class ModelHandler(BaseHandler):
         self.acc_im_em_npy_saved = None
         self.max_prediction_size = 30
         # 모델 등록용
-        # self.npy_path = '/home/model-server/npy'
+        self.npy_path = '/home/model-server/npy'
         # 성능평가용
-        self.npy_path = '/home/ubuntu/projects_jonathan'
+        # self.npy_path = '/home/ubuntu/projects_jonathan'
         npy_full_path = os.path.join(self.npy_path, "acc_im_em.npy")
         if os.path.isfile(npy_full_path):
             self.acc_im_em = self.np_load(npy_full_path)
@@ -169,18 +169,18 @@ class ModelHandler(BaseHandler):
         best_map = checkpoint['best_map']
         state_dict = checkpoint['state_dict']
         sem_dim = 0
-        '''
-        모델 등록용
+
+        # 모델 등록용
         path_dataset = '/home/model-server/sem_pcyc/dataset'
         path_aux = '/home/model-server/sem_pcyc/aux'
         self.dataset = dataset = 'intersection'
         semantic_models = ['new_plus_words']
-        '''
+
         # 검증용
-        path_dataset = '/home/ubuntu/sem_pcyc/dataset'
-        path_aux = '/home/ubuntu/sem_pcyc/aux'
-        self.dataset = dataset = 'intersection'
-        semantic_models = ['new_plus_words']
+        # path_dataset = '/home/ubuntu/sem_pcyc/dataset'
+        # path_aux = '/home/ubuntu/sem_pcyc/aux'
+        # self.dataset = dataset = 'intersection'
+        # semantic_models = ['new_plus_words']
         files_semantic_labels = []
         dim_out = 64
         str_aux = ''
