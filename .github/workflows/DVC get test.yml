@@ -9,7 +9,7 @@ jobs:
           conda activate DVC
           cd ~
           cd projects_jonathan
-          dvc get https://github.com/monkeykim111/dvctest.git images
+          dvc get https://github.com/monkeykim111/dvctest.git images && sleep 50s
           sleep 50s
           cd images
           ls
