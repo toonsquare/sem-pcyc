@@ -12,12 +12,9 @@ jobs:
           dvc add images
           git add images.dvc
           dvc push
-          sleep 50s
           git commit -m "test version2"
           git tag -a "v2.0" -m "test version2"
-          sleep 50s
           git push origin main
-          sleep 50s
           git push --tag
           
           
