@@ -1,0 +1,23 @@
+name: SEM-PCYC version check
+on: workflow_dispatch
+jobs:
+  jobs1:
+      runs-on: self-hosted
+      steps:
+       - run: |
+          conda activate DVC
+          cd ~
+          cd /home/ubuntu/dvctest/
+          dvc add images
+          git add images.dvc
+          dvc push
+          sleep 50s
+          git commit -m "test version2"
+          git tag -a "v2.0" -m "test version2"
+          sleep 50s
+          git push origin main
+          sleep 50s
+          git push --tag
+          
+          
+          
