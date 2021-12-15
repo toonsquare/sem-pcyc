@@ -29,7 +29,7 @@ jobs:
             # dvc get intersection data
             cd ~
             cd /home/model-server/sem_pcyc/dataset/
-            dvc get https://github.com/monkeykim111/dvctest.git images
+            dvc get https://github.com/monkeykim111/dvctest.git intersection
           
   jobs2:
       name: Create files and trian a model
