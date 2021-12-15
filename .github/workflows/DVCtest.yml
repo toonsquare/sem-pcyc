@@ -1,4 +1,4 @@
-name: SEM-PCYC version check
+name: DVC TEST
 on: workflow_dispatch
 jobs:
   jobs1:
