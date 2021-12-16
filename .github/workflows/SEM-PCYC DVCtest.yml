@@ -6,6 +6,9 @@ jobs:
       runs-on: self-hosted
       env: 
           AWS_IP: ${{ secrets.AWS_IP }}
+          # S3로 접근하기 위한 ID와 KEY - 이걸 적기만 하면 자동으로 접근이 가능한가? 따로 적어줘야 하나 확인
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}          
       steps:
         - run: |
             source activate pytorch_p36
@@ -18,18 +21,21 @@ jobs:
             cd ~
             # 추가된 intersection 데이터 셋 DVC로 version  data registry & remote storage에 push
             # cd 추가된 데이터 셋이 있는 경로로 이동 - 위치 알고 다시 적기(로컬이면 로컬, 클라우드면 클라우드)
-            dvc add intersection
-            git add intersection.dvc
+            zip intersection.zip intersection/*/*/*
+            dvc add intersection.zip
+            git add intersection.zip.dvc
             dvc push
             git commit -m "test version$myVersion"
             git tag -a "v$myVersion" -m "dataset test version$myVersion"
             git push origin main
             git push --tags
-          
+            
             # dvc get intersection data
             cd ~
             cd /home/model-server/sem_pcyc/dataset/
-            dvc get https://github.com/monkeykim111/dvctest.git intersection
+            dvc get https://github.com/monkeykim111/dvctest.git intersection.zip
+            unzip intersection.zip
+            rm -v ./intersection.zip
           
   jobs2:
       name: Create files and trian a model
@@ -37,6 +43,9 @@ jobs:
       runs-on: self-hosted
       env: 
           AWS_IP: ${{ secrets.AWS_IP }}
+          # S3로 접근하기 위한 ID와 KEY - 이걸 적기만 하면 자동으로 접근이 가능한가? 따로 적어줘야 하나 확인
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
       steps:
         - run: |
             source activate pytorch_p36
@@ -198,6 +207,7 @@ jobs:
           echo start remove the intersection!!!!!!!!!!!
           # dvc get을 통해 data를 가져올 때 이미 있으면 덮어쓰지 않고 오류를 내므로 지워줘야 한다.
           rm -rf intersection
+          # 굳이 생성된 file들을 삭제해 줄 필요는 없는 것 같다. 가져오는 것은 dataset뿐이기 때문에
           
   jobs5:
       name: Resgister a model
