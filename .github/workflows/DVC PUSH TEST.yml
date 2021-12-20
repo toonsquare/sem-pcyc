@@ -15,11 +15,11 @@ jobs:
             cd ~
             source activate pytorch_p36
             conda activate DVC
-            cp /home/ubuntu/dvctest.txt /home/ubuntu/projects_jonathan/sem-pcyc/DVC/dvctest.txt
+            #cp /home/ubuntu/dvctest.txt /home/ubuntu/projects_jonathan/sem-pcyc/DVC/dvctest.txt
             cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC/
-            dvc add dvctest.txt
-            git add dvctest.txt.dvc .gitignore
-            git commit -m "github action dvc test"
+            #dvc add dvctest.txt
+            #git add dvctest.txt.dvc .gitignore
+            #git commit -m "github action dvc test"
             git push
             dvc push
             echo "push test done"
