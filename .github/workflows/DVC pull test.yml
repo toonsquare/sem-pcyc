@@ -17,7 +17,7 @@ jobs:
           dvc get https://github.com/toonsquare/sem-pcyc.git DVC/codes.tar
           sudo mv codes.tar /home/model-server/sem_pcyc/dataset
           cd /home/model-server/sem_pcyc/dataset
-          tar -xvf codes.tar
+          sudo tar -xvf codes.tar
           ls -al
           echo Done!!
 #          tar -xvf intersection.tar
