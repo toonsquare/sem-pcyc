@@ -13,11 +13,10 @@ jobs:
         run: |
           source activate pytorch_p36
           conda activate DVC
-          #cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC # 이거 되는 거는 확인완료
-          #dvc pull intersection.tar
-          #echo Done!!
+          cd /home/ubuntu
+          sudo dvc get https://github.com/toonsquare/sem-pcyc.git DVC/codes.tar
+          sudo mv codes.tar /home/model-server/sem_pcyc/dataset
           cd /home/model-server/sem_pcyc/dataset
-          sudo dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar
+          ls -al
           echo Done!!
-#          mv intersection.tar /home/model-server/sem_pcyc/dataset
 #          tar -xvf intersection.tar
