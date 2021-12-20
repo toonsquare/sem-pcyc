@@ -14,8 +14,8 @@ jobs:
           source activate pytorch_p36
           conda activate DVC
           cd /home/ubuntu
-          sudo dvc get https://github.com/toonsquare/sem-pcyc.git DVC/codes.tar
-          sudo mv codes.tar /home/model-server/sem_pcyc/dataset
+          dvc get https://github.com/toonsquare/sem-pcyc.git DVC/codes.tar
+          mv codes.tar /home/model-server/sem_pcyc/dataset
           cd /home/model-server/sem_pcyc/dataset
           ls -al
           echo Done!!
