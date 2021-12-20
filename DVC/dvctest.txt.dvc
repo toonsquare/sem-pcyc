@@ -1,0 +1,4 @@
+outs:
+- md5: a8eadaa90dc74c0d0717956ab57077b3
+  size: 13
+  path: dvctest.txt
