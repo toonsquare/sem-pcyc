@@ -7,15 +7,15 @@ jobs:
       - uses: actions/checkout@v2
       - uses: iterative/setup-dvc@v1
       - name: dvc pull dataset
-#         env:
-#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+        env:
+           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
         run: |
           source activate pytorch_p36
           conda activate DVC
-          cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC
-          dvc pull intersection.tar
-          echo Done!!
+          #cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC # 이거 되는 거는 확인완료
+          #dvc pull intersection.tar
+          #echo Done!!
           cd /home/ubuntu/projects_jonathan/sem-pcyc
           dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar
           echo Done!!
