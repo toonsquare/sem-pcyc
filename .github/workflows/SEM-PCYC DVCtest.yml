@@ -2,7 +2,7 @@ name: CML & DVC TEST
 on: workflow_dispatch
 jobs:
   jobs1:
-    name: Get tha added dataset to the dataset path
+    name: Get the added dataset
     runs-on: self-hosted
     steps:
         - uses: actions/checkout@v2
@@ -14,13 +14,14 @@ jobs:
           run: |
             source activate pytorch_p36
             conda activate DVC
-            cd /home/ubuntu
-            dvc get https://github.com/toonsquare/sem-pcyc.git DVC/codes.tar    # test끝나고 intersection으로 바꾸기!!!
-            sudo mv codes.tar /home/model-server/sem_pcyc/dataset
-            cd /home/model-server/sem_pcyc/dataset
-            sudo tar -xvf codes.tar
-            ls -al
-            echo Done!!
+            echo dvc get start!!
+#            cd /home/ubuntu
+#            dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar    # test끝나고 intersection으로 바꾸기!!!
+#            sudo mv intersection.tar /home/model-server/sem_pcyc/dataset
+#            cd /home/model-server/sem_pcyc/dataset
+#            sudo tar -xvf intersection.tar
+#            ls -al
+#            echo Done!!
             
             
             
