@@ -17,7 +17,7 @@ jobs:
           #dvc pull intersection.tar
           #echo Done!!
           cd /home/model-server/sem_pcyc/dataset
-          dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar
+          sudo dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar
           echo Done!!
 #          mv intersection.tar /home/model-server/sem_pcyc/dataset
 #          tar -xvf intersection.tar
