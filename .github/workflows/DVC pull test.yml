@@ -15,8 +15,9 @@ jobs:
           conda activate DVC
           cd /home/ubuntu
           dvc get https://github.com/toonsquare/sem-pcyc.git DVC/codes.tar
-          mv codes.tar /home/model-server/sem_pcyc/dataset
+          sudo mv codes.tar /home/model-server/sem_pcyc/dataset
           cd /home/model-server/sem_pcyc/dataset
+          tar -xvf codes.tar
           ls -al
           echo Done!!
 #          tar -xvf intersection.tar
