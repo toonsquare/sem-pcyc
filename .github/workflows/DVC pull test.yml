@@ -1,4 +1,4 @@
-name: CML & DVC
+name: DVC PULL TEST
 on: workflow_dispatch
 jobs:
   run:
