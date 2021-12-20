@@ -1,0 +1,5 @@
+outs:
+- md5: 13e51841bd8d1ecccf458185005e2368
+  size: 678553
+  path: new_plus_words.npy
+  isexec: true

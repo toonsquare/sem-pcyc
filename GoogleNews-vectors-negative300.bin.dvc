@@ -1,0 +1,4 @@
+outs:
+- md5: 023bfd73698638bdad5f84df53404c8b
+  size: 3644258522
+  path: GoogleNews-vectors-negative300.bin
