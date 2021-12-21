@@ -159,6 +159,15 @@ tag도 push
 따라서 file을 가져오기 위해서는 <u>클론을 먼저 한 후 key & id를 등록을 해주고 file을 가져와야 한다.</u>  
 **(github action이라면 환경변수 등록해주었기 때문에 어떤 경로에서든지 file을 가져올 수 있다.)**
 
+### git clone 해서 file가져오기(_dvc pull_)
+1. `git clone https://github.com/toonsquare/sem-pcyc.git`
+2. `git tag`  
+클론한 repository에 tag의 목록을 보여줌
+3. `git checkout 버전`
+4. `dvc pull`  
+해당 버전에서 push 했던 file들을 가져옴
+
+
 ### data registry(git repository)에서 file가져오기(_dvc get & dvc import_)
 * intersection.tar 파일 가져오기      
 `dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar`  
@@ -170,14 +179,7 @@ tag도 push
 * 파일이나 폴더 가져오기 (DVC.dvc와 DVC폴더 생성)  
 `dvc import https://github.com/toonsquare/sem-pcyc.git DVC`
 
-### git clone 해서 file가져오기(_dvc pull_)
-1. `git clone https://github.com/toonsquare/sem-pcyc.git`
-2. `git tag`  
-클론한 repository에 tag의 목록을 보여줌
-3. `git checkout 버전`
-4. `dvc pull`  
-해당 버전에서 push 했던 file들을 가져옴
-
+  
 ## DVC pull & push할 때 주의사항
 dvc push나 pull을 할 때, 지정된 remote storage에 맞는 credential 정보를 입력해주어야 한다.  
 ex) s3 bucket - access_key_id & secret_access_key를 local에 등록을 해준다.  
