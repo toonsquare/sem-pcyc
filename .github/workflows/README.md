@@ -160,13 +160,14 @@ tag도 push
 **(github action이라면 환경변수 등록해주었기 때문에 어떤 경로에서든지 file을 가져올 수 있다.)**
 
 ### data registry(git repository)에서 file가져오기(_dvc get & dvc import_)
-intersection.tar 파일 가져오기      
+* intersection.tar 파일 가져오기      
 `dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar`  
 `dvc get` 명령어만 동작이 안되고 있으며, github action에서만 동작이 된다.   
 오류는 `ERROR: unexpected error - Unable to locate credentials ` 이며, aws access key와 id를 등록하지 않고 dvc pull이나 push를 할 때 발생한다.  
 그러나 key와 id를 등록을 했음에도 발생하고 있다.    
 
-파일이나 폴더 가져오기 (DVC.dvc와 DVC폴더 생성)  
+
+* 파일이나 폴더 가져오기 (DVC.dvc와 DVC폴더 생성)  
 `dvc import https://github.com/toonsquare/sem-pcyc.git DVC`
 
 ### git clone 해서 file가져오기(_dvc pull_)
