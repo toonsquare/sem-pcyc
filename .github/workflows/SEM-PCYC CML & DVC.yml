@@ -16,7 +16,7 @@ jobs:
              conda activate DVC
              echo dvc get start!!
              cd /home/ubuntu
-             dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar    # test끝나고 intersection으로 바꾸기!!!
+             dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar
              sudo mv intersection.tar /home/model-server/sem_pcyc/dataset
              cd /home/model-server/sem_pcyc/dataset
              sudo tar -xvf intersection.tar
