@@ -156,8 +156,8 @@ tag도 push
 
 ## dvc로 파일 pull하기
 현재 remote storage가 s3이므로 dvc remote modify로 aws access key와 id를 적어주어야 s3에 접근이 가능하다.  
-따라서 file을 가져오기 위해서는 클론을 먼저 한 후 key & id를 등록을 해주고 file을 가져와야 한다.  
-**<u>(github action이라면 환경변수 등록해주었기 때문에 어떤 경로에서든지 file을 가져올 수 있다.)</u>**
+따라서 file을 가져오기 위해서는 <u>클론을 먼저 한 후 key & id를 등록을 해주고 file을 가져와야 한다.</u>  
+**(github action이라면 환경변수 등록해주었기 때문에 어떤 경로에서든지 file을 가져올 수 있다.)**
 
 ### data registry(git repository)에서 file가져오기(_dvc get & dvc import_)
 intersection.tar 파일 가져오기      
