@@ -25,7 +25,7 @@ jobs:
              echo Done!!
 
   jobs2:
-      name: Create files and trian a model
+      name: Create files and trian a model and dvc push
       needs: jobs1
       runs-on: self-hosted
       steps:
