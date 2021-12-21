@@ -75,6 +75,7 @@ jobs:
               cd ~
               conda activate DVC
               cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC/
+              
               # 필요한 파일 DVC 폴더로 복사
               cp /home/model-server/npy/acc_im_em.npy /home/ubuntu/projects_jonathan/sem-pcyc/DVC/acc_im_em.npy
               cp /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth  /home/ubuntu/projects_jonathan/sem-pcyc/DVC/model_best.pth
@@ -107,126 +108,131 @@ jobs:
               echo "git push done!!!!!!!!!!!!!!!"
                     
     
-#   jobs3:
-#       name: Request
-#       needs: jobs2
-#       runs-on: self-hosted
-#       env: 
-#           AWS_IP: ${{ secrets.AWS_IP }}
-#       steps:
-#         - run: |
-#             source activate pytorch_p36
-#             cd ~
-#             # Version 변수 설정
-#             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
-#             myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+  jobs3:
+      name: Request
+      needs: jobs2
+      runs-on: self-hosted
+      env: 
+          AWS_IP: ${{ secrets.AWS_IP }}
+      steps:
+        - run: |
+            source activate pytorch_p36
+            cd ~
+            # Version 변수 설정
+            curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+            myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
             
-#             cd /home/ubuntu/projects_jonathan
-#             echo torchserve start!!!!!
-#             torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc$myVersion.mar
-#             sleep 50s
-#             echo model request start!!!!!
-#             cd ~
-#             echo request guitar
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
-#             sleep 5s
+            cd /home/ubuntu/projects_jonathan
+            echo torchserve start!!!!!
+            torchserve --ts-config ./ts/config.properties --start --model-store ./model-store --models sem_pcyc=sem_pcyc$myVersion.mar
+            sleep 50s
+            echo model request start!!!!!
+            cd ~
+            echo request guitar
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T guitar.png
+            sleep 5s
             
-#             echo request backyard
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
-#             sleep 5s
+            echo request backyard
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T backyard.png
+            sleep 5s
             
-#             echo request balloon
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
-#             sleep 5s
+            echo request balloon
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T balloon.jpg
+            sleep 5s
             
-#             echo request car
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
-#             sleep 5s
+            echo request car
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T car.png
+            sleep 5s
             
-#             echo request house
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
-#             sleep 5s
+            echo request house
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T house.png
+            sleep 5s
             
-#             echo request closet
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
-#             sleep 5s
+            echo request closet
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T closet.png
+            sleep 5s
             
-#             echo request pavillon
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
-#             sleep 5s
+            echo request pavillon
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavillon.png
+            sleep 5s
             
-#             echo request school
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
-#             sleep 5s
+            echo request school
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T school.jpg
+            sleep 5s
             
-#             echo request worktable
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
-#             sleep 5s
+            echo request worktable
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T worktable.png
+            sleep 5s
             
-#             echo request bike_racks
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
-#             sleep 5s
+            echo request bike_racks
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T bike_racks.jpg
+            sleep 5s
             
-#             echo request seats
-#             curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
+            echo request seats
+            curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
           
           
-#   jobs4:
-#       name: Transfer files and remove the dataset
-#       needs: jobs3
-#       runs-on: self-hosted
-#       steps: 
-#       - env: 
-#           PEM_KEY: ${{ secrets.PEM_KEY }}
-#           AWS_IP: ${{ secrets.AWS_IP }}
-#           AWS_ID: ${{ secrets.AWS_ID }}
-#         run: |
-#           source activate pytorch_p36
-#           # Version 변수 설정
-#           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
-#           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+  jobs4:
+      name: Transfer files and remove the dataset
+      needs: jobs3
+      runs-on: self-hosted
+      steps: 
+      - env: 
+          PEM_KEY: ${{ secrets.PEM_KEY }}
+          AWS_IP: ${{ secrets.AWS_IP }}
+          AWS_ID: ${{ secrets.AWS_ID }}
+        run: |
+          source activate pytorch_p36
+          # Version 변수 설정
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+          myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
           
-#           cd ~
-#           echo file transfer start!!!!!!!!!!!
-#           echo word2vec.npy file transfer!!!!!!!!!!!!!
-#           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
-#           echo image_embedding.npy file transfer!!!!!!!!!!!!!
-#           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/npy/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/npy
-#           echo model_best.pth file transfer!!!!!!!!!!!!! 
-#           scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64
-#           echo image and sketch dataset transfer!!!!!!!!!!!!!
-#           scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/images/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
-#           scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/sketches/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/sketches
-#           echo sem_pcyc.mar file transfer!!!!!!!!!!!!!
-#           scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/model-store
-#           echo file transfer success!!!!!!
+          cd ~
+          echo file transfer start!!!!!!!!!!!
+          echo word2vec.npy file transfer!!!!!!!!!!!!!
+          scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/Semantic/intersection
           
-#           echo start remove the intersection!!!!!!!!!!!
-#           # dvc get을 통해 data를 가져올 때 이미 있으면 덮어쓰지 않고 오류를 내므로 지워줘야 한다.
-#           rm -rf intersection
-#           # 굳이 생성된 file들을 삭제해 줄 필요는 없는 것 같다. 가져오는 것은 dataset뿐이기 때문에
+          echo image_embedding.npy file transfer!!!!!!!!!!!!!
+          scp -i ./${{ secrets.PEM_KEY }} /home/model-server/npy/acc_im_em.npy ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/npy
           
-#   jobs5:
-#       name: Resgister a model
-#       needs: jobs4
-#       runs-on: self-hosted
-#       steps: 
-#       - env: 
-#           AWS_IP: ${{ secrets.AWS_IP }}
-#         run: |
-#           source activate pytorch_p36
-#           # Version 변수 설정
-#           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
-#           myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
-#           echo present model check!!!!!!!!!!!!!
-#           curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
-#          echo model register!!!!!!!!!!!!!
-#          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc$myVersion.mar"
-#          echo change default model!!!!!!!!!!!!!
-#          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc/$myVersion/set-default
-#          echo new model check!!!!!!!!!!!!!
-#          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
-#          echo sem_pcyc$myVersion이 등록되었습니다.
+          echo model_best.pth file transfer!!!!!!!!!!!!! 
+          scp -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64
+          
+          echo image and sketch dataset transfer!!!!!!!!!!!!!
+          scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/images/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/images
+          scp -r -i ./${{ secrets.PEM_KEY }} /home/model-server/sem_pcyc/dataset/intersection/sketches/ ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/ml_data/sem_pcyc/dataset/intersection/sketches
+          
+          echo sem_pcyc.mar file transfer!!!!!!!!!!!!!
+          scp -i ./${{ secrets.PEM_KEY }} /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar ${{ secrets.AWS_ID }}@${{ secrets.AWS_IP }}:/home/ubuntu/sem-pcyc/model-store
+          
+          echo file transfer success!!!!!!
+          
+  jobs5:
+      name: Resgister a model
+      needs: jobs4
+      runs-on: self-hosted
+      steps: 
+      - env: 
+          AWS_IP: ${{ secrets.AWS_IP }}
+        run: |
+          source activate pytorch_p36
+          # Version 변수 설정
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+          myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+          
+          echo present model check!!!!!!!!!!!!!
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+          
+          echo model register!!!!!!!!!!!!!
+          curl -X POST "http://${{ secrets.AWS_IP }}:8081/models?model_name=sem_pcyc&url=/home/ubuntu/sem-pcyc/model-store/sem_pcyc$myVersion.mar"
+          
+          echo change default model!!!!!!!!!!!!!
+          curl -v -X PUT http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc/$myVersion/set-default
+          
+          echo new model check!!!!!!!!!!!!!
+          curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc
+          
+          echo sem_pcyc$myVersion이 등록되었습니다.
 
 
 
