@@ -1,4 +1,4 @@
-# SEM PCYC CML
+# SEM PCYC CML & DVC
 
 ## github action의 runner
 runner는 이용자에게 부여된 가상 머신정도로 이해  
@@ -95,7 +95,17 @@ command를 실행하는 단계
 ## Pipeline
 ![sem_pcyc_cml_dvc](https://user-images.githubusercontent.com/82593754/146878527-af0acdef-6ff8-4629-8486-9245c18726b0.jpg)
 
-* **nipa 서버에 새로운 데이터 셋이 추가가 되었다는 것을 전제로 작동함**
+**사용자가 새로운 dataset을 dvc push와 git push를 이용해서 data registry(git repo)와 remote storage(s3 bucket)에 올려주는 것을 전제로 한다(<u>tag는 하지 말것!</u>).**
+
+###Pipeline에 대한 설명
+1. <u>사용자가 클래스가 추가된 intersection dataset을 dvc push로 s3 bucket에, git push로 data registry에 올렸음을 가정함</u>
+2. github action을 trigger하기 위해 workflow_dispatch를 수동으로 클릭
+3. job1에서 dvc get을 이용하여 클래스가 추가된 intersection dataset을 nipa의 dataset 경로에 위치시킴
+4. train을 하고 mar을 비롯한 여러 파일들(pth, npy, mar, dataset ...)과 code들에 tag를 붙이고 git push & dvc push를 해준다.
+5. 클래스가 추가된 dataset으로 만들어진 mar을 request한다.
+6. scp로 파일들을 aws ssh에 이동시킨다.
+7. 새로운 모델을 등록한다.
+
 
 Create files and train a model  
 train 제외 약 3분 소요  
@@ -112,4 +122,76 @@ dataset까지 전송을 시켜주기 때문에 나중에 더 많은 dataset이 �
 
 Register a model  
 약 40초 소요  
+
+# DVC
+dvc 설치  
+`pip install dvc`  
+
+NIPA의 경우 conda로 dvc 가상환경을 만들었음  
+`source activate pytorch_p36` 입력 후 `conda activate DVC` 입력
+
+version 관리를 하고 싶은 파일이 bigdata.txt라 가정
+1. `git init`
+2. `dvc init`
+3. `dvc add bigdata.txt`  
+bigdata.txt.dvc 파일 생성, .gitignore에 dvc add된 파일이 자동 등록됨   
+4. `git add bigdata.txt.dvc .gitignore`   
+.dvc파일과 .gitignore git add  
+5. `dvc remote add -d storage이름설정 s3://bucket/path`   
+real file을 저장할 remote storage 등록(s3라 가정, 경로에는 bucket의 uri입력)  
+6. `git add .dvc/config`  
+remote storage를 등록하면 .dvc/config 파일에 정보가 입력되며, 이것도 git add 해주기  
+7. `git commit -m "message"`  
+data registry에 push하기 위해 commit을 함  
+8. `git tag -a "v1.0" -m "message"`  
+version관리를 하기 위해 tag를 달아줌    
+9. `git push`  
+지정된 data registry에 .dvc 파일 push(real file은 .gitignore에 있어 github에 올라가지 못함)    
+10. `git push --tags`  
+tag도 push    
+11. `dvc push`  
+지정된 remote storage에 real file push  
+    (s3를 remote storage로 지정한 경우, `pip install boto3` & `pip install s3fs`를 해주어야 한다.)
+
+### DVC pull & push할 때 주의사항
+dvc push나 pull을 할 때, 지정된 remote storage에 맞는 credential 정보를 입력해주어야 한다.  
+ex) s3 bucket - access_key_id & secret_access_key를 local에 등록을 해준다.  
+(민감한 정보는 --local로 config.local에 등록해줄 수 있다.)  
+`dvc remote modify --local storage access_key_id 'my id'`  
+`dvc remote modify --local storage secret_access_key 'my key'`  
+이렇게 지정을 해주면 key와 id가 .dvc/config.local 파일에 등록되고, 이 파일은 .gitignore에 있어 push가 되지 않는다.  
+
+github action으로 push나 pull을 할 경우에는 `dvc remote modify` 명령어를 사용할 필요 없이,  
+`- uses: iterative/setup-dvc@v1secret`를 사용하고, key와 id를 환경변수로 지정해 주면 dvc를 자동화하여 사용할 수 있다.
+```
+steps:
+    - uses: actions/checkout@v2
+    - uses: iterative/setup-dvc@v1
+       env:
+          AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+```
+
+## dvc로 파일 pull하기
+### data registry(git repository)에서 file가져오기(_dvc get & dvc import_)
+intersection.tar 파일 가져오기    -- get만 지금 에러발생(일단 적고 후에 해결 방법 찾기)  
+`dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar`  
+DVC 폴더 전부 가져오기 (DVC.dvc와 DVC폴더 생성)  
+`dvc import https://github.com/toonsquare/sem-pcyc.git DVC`
+
+### git clone 해서 file가져오기
+1. `git clone https://github.com/toonsquare/sem-pcyc.git`
+2. `git tag`  
+클론한 repository에 tag의 목록을 보여줌
+3. `git checkout 체크아웃할 버전`
+4. `dvc pull`  
+해당 버전에서 push 했던 file들을 가져옴
+
+## dvc로 파일 push하기
+remote storage가 지정되어있다고 가정
+1. `dvc add intersection.tar`
+2. `dvc push intersection.tar.dvc`  
+
+
+
 
