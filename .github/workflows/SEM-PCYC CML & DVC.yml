@@ -87,9 +87,9 @@ jobs:
               
               # 사용된 codes들도 DVC/codes 폴더로 복사
               cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/utils.py
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/train.py
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/mk_image_emd_npy.py
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/newclass_word2vec.py
+              cp /home/ubuntu/projects_jonathan/src/train.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/train.py
+              cp /home/ubuntu/projects_jonathan/src/mk_image_emd_npy.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/mk_image_emd_npy.py
+              cp /home/ubuntu/projects_jonathan/src/newclass_word2vec.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/newclass_word2vec.py
               cp /home/ubuntu/projects_jonathan/src/models.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/models.py
               cp /home/ubuntu/projects_jonathan/sem-pcyc/ts/torch_handler/sem_pcyc_handler.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/sem_pcyc_handler.py
               tar -cvf codes.tar codes
