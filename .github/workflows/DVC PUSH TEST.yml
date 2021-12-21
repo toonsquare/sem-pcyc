@@ -95,17 +95,17 @@ jobs:
               #git commit -m "DVC, plus intersection dataset, version is $myVersion"
               #git tag -a "v$myVersion" -m "DVC, plus intersection dataset, version is $myVersion"
               
-              cp /home/ubuntu/guitar.png /home/ubuntu/projects_jonathan/sem-pcyc/DVC/guitar.png
-              dvc add guitar.png
+              #cp /home/ubuntu/guitar.png /home/ubuntu/projects_jonathan/sem-pcyc/DVC/guitar.png
+              #dvc add guitar.png
               
-              git add guitar.png.dvc
-              git commit -m "github action push test and version test $myVersion"
-              git tag -a "v$myVersion" -m "github action push test and version test $myVersion"
+              #git add guitar.png.dvc
+              #git commit -m "github action push test and version test $myVersion"
+              #git tag -a "v$myVersion" -m "github action push test and version test $myVersion"
               
-              dvc push
-              echo "dvc push done"
+              #dvc push
+              #echo "dvc push done"
               
-              git push
+              #git push
               git push --tags
               echo "git push done"
 
