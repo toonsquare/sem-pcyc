@@ -7,7 +7,8 @@ import numpy as np
 
 import utils
 
-root_path = "/home/ubuntu/sem_pcyc/dataset/intersection/images"
+# root_path = "/home/ubuntu/sem_pcyc/dataset/intersection/images"
+root_path = "/home/model-server/sem_pcyc/dataset/intersection/images"
 
 def create_wordemb(root_path, type='word2vec-google-news-300'):
     clss = glob.glob(os.path.join(root_path, '*'))
@@ -17,7 +18,7 @@ def create_wordemb(root_path, type='word2vec-google-news-300'):
         print("Type specified does not exist.")
         exit()
     model = gensim.models.KeyedVectors.load_word2vec_format(
-        '/home/ubuntu/projects_jonathan/GoogleNews-vectors-negative300.bin', binary=True).wv
+        '/home/model-server/GoogleNews-vectors-negative300.bin', binary=True).wv        # 구글워드투벡 옮기기!!!!!!!!!
 
     lv = len(model['airplane'])  # for knowing the length of vector
 
@@ -47,12 +48,12 @@ plus_word = {}
 plus_word = create_wordemb(root_path)
 
 # 생성한 dict를 npy로 만들기
-np.save('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', plus_word)
+np.save('/home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', plus_word)
 print('npy create!')
 
 '''
 # 생성한 npy 불러오기 - 클래스 확인용
-load_dict = np.load('/home/ubuntu/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', allow_pickle=True)
+load_dict = np.load('/home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy', allow_pickle=True)
 
 load_dict_list = load_dict.tolist()
 dict_list = []

@@ -10,8 +10,10 @@ from torch.utils.data import DataLoader
 
 class MakeNPY():
     def __init__(self):
-        self.path_dataset = '/home/ubuntu/sem_pcyc/dataset'
-        self.path_aux = '/home/ubuntu/sem_pcyc/aux'
+        # self.path_dataset = '/home/ubuntu/sem_pcyc/dataset'
+        # self.path_aux = '/home/ubuntu/sem_pcyc/aux'
+        self.path_dataset = '/home/model-server/sem_pcyc/dataset'
+        self.path_aux = '/home/model-server/sem_pcyc/aux'
         self.dataset = 'intersection'
         self.root_path  = os.path.join(self.path_dataset, self.dataset)
         self.photo_dir = 'images'
@@ -146,6 +148,10 @@ class MakeNPY():
         d = {l: i for i, l in enumerate(texts)}
         return d
     def SEM_PCYC(self):
+        # path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch', 'VGGNet')
+        # path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image', 'VGGNet')
+
+        # imagenet model
         path_sketch_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'sketch')
         path_image_model = os.path.join(self.path_aux, 'CheckPoints', self.dataset, 'image')
         dict_clss = self._create_dict_texts(self.splits['tr_clss_im'])
@@ -195,7 +201,7 @@ class MakeNPY():
 
 
         sem_pcyc_model = SEM_PCYC(params_model)
-        path_pth ="/home/ubuntu/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth"
+        path_pth ="/home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth"
         device = torch.device("cuda")
         checkpoint = torch.load(path_pth,map_location="cuda:0")
         sem_pcyc_model.load_state_dict(checkpoint['state_dict'])
@@ -210,7 +216,7 @@ def main() :
     print('size acc_im_em : {}'.format(len(acc_im_em)))
     print("\n")
     print("--------------START Saving--------------")
-    np.save("/home/ubuntu/projects_jonathan/acc_im_em.npy", acc_im_em)
+    np.save("/home/model-server/npy/acc_im_em.npy", acc_im_em)
     print("--------------END Saving--------------")
 
 if __name__ == "__main__":
