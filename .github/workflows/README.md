@@ -95,9 +95,9 @@ command를 실행하는 단계
 ## Pipeline
 ![sem_pcyc_cml_dvc](https://user-images.githubusercontent.com/82593754/146878527-af0acdef-6ff8-4629-8486-9245c18726b0.jpg)
 
-**사용자가 새로운 dataset을 dvc push와 git push를 이용해서 data registry(git repo)와 remote storage(s3 bucket)에 올려주는 것을 전제로 한다(<u>tag는 하지 말것!</u>).**
+**사용자가 새로운 dataset을 dvc push와 git push를 이용해서 data registry(git repo)와 remote storage(s3 bucket)에 올려주는 것을 전제로 한다(<u>dataset을 추가할 때는 tag 달지 말것!</u>).**
 
-###Pipeline에 대한 설명
+### Pipeline에 대한 설명
 1. <u>사용자가 클래스가 추가된 intersection dataset을 dvc push로 s3 bucket에, git push로 data registry에 올렸음을 가정함</u>
 2. github action을 trigger하기 위해 workflow_dispatch를 수동으로 클릭
 3. job1에서 dvc get을 이용하여 클래스가 추가된 intersection dataset을 nipa의 dataset 경로에 위치시킴
