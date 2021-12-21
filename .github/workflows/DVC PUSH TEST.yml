@@ -105,6 +105,7 @@ jobs:
               dvc push
               echo dvc push done
               
-              git push
+              git push origin develop
+              git push --tags
               echo git push done
 
