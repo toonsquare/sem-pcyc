@@ -7,7 +7,6 @@ jobs:
     steps:
         - uses: actions/checkout@v2
         - uses: iterative/setup-dvc@v1
-        - name: dvc pull dataset
           env:
              AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
              AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
@@ -26,79 +25,86 @@ jobs:
             
             
             
-#   jobs2:
-#       name: Create files and trian a model
-#       needs: jobs1
-#       runs-on: self-hosted
-#       env: 
-#           AWS_IP: ${{ secrets.AWS_IP }}
-#           # S3로 접근하기 위한 ID와 KEY - 이걸 적기만 하면 자동으로 접근이 가능한가? 따로 적어줘야 하나 확인
-#           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-#           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
-#       steps:
-#         - run: |
-#             source activate pytorch_p36
-#             cd ~
-#             # Version 변수 설정
-#             curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
-#             myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
-#             echo "다음에 등록할 버전은 $myVersion 버전입니다."
-#             echo "################################################################"
-            
-#             # 추가된 class에 대한 word2vec 진행
-#             cd /home/ubuntu/projects_jonathan/src
-#             echo Create new_plus_words.npy!!!!!!!!!!!!!!
-#             python newclass_word2vec.py
-#             echo Create new_plus_words.npy done!!!!!!!!!!!!!!    
-#             echo "################################################################"
-            
-#             # SEM-PCYC 학습 시작
-#             echo SEM-PCYC model train start!!!!!!!!!!!!!
-#             #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
-#             echo SEM-PCYC model train done!!!!!!!!!!!!!!
-#             echo "################################################################"
-            
-#             # Image embedding 생성
-#             echo Create acc_im_em.npy!!!!!!!!!!!!!!
-#             python mk_image_emd_npy.py
-#             echo Create acc_im_em.npy done!!!!!!!!!!!!!!
-#             echo "################################################################"
-            
-#             # 새로운 버전의 sem_pcyc.mar 생성
-#             echo Create sem_pcyc.mar!!!!!!!!!!!!!!
-#             cd ..
-#             torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
-#             echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
-#             mv -v ./sem_pcyc$myVersion.mar ./model-store
-#             echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
-            
-#             # 생성된 파일들 DVC로 version 붙여서 data registry & remote storage에 push하기
-#             echo Start data versioning the files
-#             cd /home/model-server/sem_pcyc/aux/Semantic/intersection/
-#             dvc add new_plus_words.npy
-#             git add new_plus_words.npy.dvc
-#             dvc push
-            
-#             cd /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/
-#             dvc add model_best.pth
-#             git add model_best.pth.dvc
-#             dvc push
-            
-#             cd /home/model-server/npy/
-#             dvc add acc_im_em.npy
-#             git add acc_im_em.npy.dvc
-#             dvc push
-            
-#             cd /home/ubuntu/projects_jonathan/model-store/
-#             dvc add sem_pcyc$myVersion.mar
-#             git add sem_pcyc$myVersion.mar.dvc            
-#             dvc push
-            
-#             git commit -m "dataset test version$myVersion, files version $myVersion"
-#             git tag -a "v$myVersion" -m "dataset test version$myVersion"
-#             git push origin main
-#             git push --tags
-    
+  jobs2:
+      name: Create files and trian a model
+      needs: jobs1
+      runs-on: self-hosted
+      steps:
+          - uses: actions/checkout@v2
+          - uses: iterative/setup-dvc@v1
+            env: 
+               AWS_IP: ${{ secrets.AWS_IP }}
+               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          - run: |
+              source activate pytorch_p36
+              cd ~
+              # Version 변수 설정
+              curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+              myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+              echo "다음에 등록할 버전은 $myVersion 버전입니다."
+              echo "################################################################"
+
+              # 추가된 class에 대한 word2vec 진행
+              cd /home/ubuntu/projects_jonathan/src
+              echo Create new_plus_words.npy!!!!!!!!!!!!!!
+              python newclass_word2vec.py
+              echo Create new_plus_words.npy done!!!!!!!!!!!!!!    
+              echo "################################################################"
+
+              # SEM-PCYC 학습 시작
+              echo SEM-PCYC model train start!!!!!!!!!!!!!
+              #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
+              echo SEM-PCYC model train done!!!!!!!!!!!!!!
+              echo "################################################################"
+
+              # Image embedding 생성
+              echo Create acc_im_em.npy!!!!!!!!!!!!!!
+              python mk_image_emd_npy.py
+              echo Create acc_im_em.npy done!!!!!!!!!!!!!!
+              echo "################################################################"
+
+              # 새로운 버전의 sem_pcyc.mar 생성
+              echo Create sem_pcyc.mar!!!!!!!!!!!!!!
+              cd ..
+              torch-model-archiver --model-name sem_pcyc$myVersion --version $myVersion --model-file ./src/models.py --serialized-file /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth --handler ./ts/torch_handler/sem_pcyc_handler.py --extra-files /home/model-server/npy/acc_im_em.npy
+              echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
+              mv -v ./sem_pcyc$myVersion.mar ./model-store
+              echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
+
+              cd ~
+              source activate pytorch_p36
+              conda activate DVC
+              cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC/
+              # 필요한 파일 DVC 폴더로 복사
+              cp /home/model-server/npy/acc_im_em.npy /home/ubuntu/projects_jonathan/sem-pcyc/DVC/acc_im_em.npy
+              cp /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth  /home/ubuntu/projects_jonathan/sem-pcyc/DVC/model_best.pth
+              cp /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy /home/ubuntu/projects_jonathan/sem-pcyc/DVC/new_plus_words.npy
+              cp /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar /home/ubuntu/projects_jonathan/sem-pcyc/DVC/sem_pcyc$myVersion.mar
+              cp -r /home/model-server/sem_pcyc/dataset/intersection /home/ubuntu/projects_jonathan/sem-pcyc/DVC/intersection
+              tar -cvf intersection.tar intersection
+              rm -rf intersection
+              
+              # 사용된 codes들도 DVC/codes 폴더로 복사
+              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/utils.py
+              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/train.py
+              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/mk_image_emd_npy.py
+              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/newclass_word2vec.py
+              cp /home/ubuntu/projects_jonathan/src/models.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/models.py
+              cp /home/ubuntu/projects_jonathan/sem-pcyc/ts/torch_handler/sem_pcyc_handler.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/sem_pcyc_handler.py
+              tar -cvf codes.tar codes
+              
+              dvc add acc_im_em.npy sem_pcyc$myVersion.mar codes.tar intersection.tar model_best.pth new_plus_words.npy
+              
+              git add model_best.pth.dvc sem_pcyc$myVersion.mar acc_im_em.npy.dvc codes.tar.dvc intersection.tar.dvc new_plus_words.npy.dvc
+              git commit -m "DVC, plus intersection dataset, version is $myVersion"
+              git tag -a "v$myVersion" -m "DVC, plus intersection dataset, version is $myVersion"
+              
+              dvc push
+              git push
+              
+              echo "DVC Done!!!!!!!!!"
+                    
     
 #   jobs3:
 #       name: Request
@@ -162,7 +168,8 @@ jobs:
             
 #             echo request seats
 #             curl http://0.0.0.0:8080/predictions/sem_pcyc -T seats.jpg
-            
+          
+          
 #   jobs4:
 #       name: Transfer files and remove the dataset
 #       needs: jobs3
