@@ -75,6 +75,7 @@ jobs:
               cd ~
               conda activate DVC
               cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC/
+              git pull    # push할 수 있도록 최신 상태 만들어주기
               
               # 필요한 파일 DVC 폴더로 복사
               cp /home/model-server/npy/acc_im_em.npy /home/ubuntu/projects_jonathan/sem-pcyc/DVC/acc_im_em.npy
