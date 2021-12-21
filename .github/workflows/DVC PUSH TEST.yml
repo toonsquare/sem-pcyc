@@ -103,9 +103,9 @@ jobs:
               git tag -a "v$myVersion" -m "github action push test and version test $myVersion"
               
               dvc push
-              echo dvc push done
+              echo "dvc push done"
               
               git push
               git push --tags
-              echo git push done
+              echo "git push done"
 
