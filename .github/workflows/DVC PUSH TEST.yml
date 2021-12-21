@@ -38,10 +38,10 @@ jobs:
           - run: |
               source activate pytorch_p36
               cd ~
-              ## Version 변수 설정
-              #curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
-              #myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
-              #echo "다음에 등록할 버전은 $myVersion 버전입니다."
+              # Version 변수 설정
+              curl http://${{ secrets.AWS_IP }}:8081/models/sem_pcyc > model_version
+              myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
+              echo "다음에 등록할 버전은 $myVersion 버전입니다."
               #echo "################################################################"
               ## 추가된 class에 대한 word2vec 진행
               #cd /home/ubuntu/projects_jonathan/src
@@ -72,28 +72,35 @@ jobs:
               conda activate DVC
               cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC/
               # 필요한 파일 DVC 폴더로 복사
-              cp /home/model-server/npy/acc_im_em.npy /home/ubuntu/projects_paul/last_test/dvctest/DVC/acc_im_em.npy
-              cp /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth  /home/ubuntu/projects_paul/last_test/dvctest/DVC/model_best.pth
-              cp /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy /home/ubuntu/projects_paul/last_test/dvctest/DVC/new_plus_words.npy
-              cp /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar /home/ubuntu/projects_paul/last_test/dvctest/DVC/sem_pcyc$myVersion.mar
-              cp -r /home/model-server/sem_pcyc/dataset/intersection /home/ubuntu/projects_paul/last_test/dvctest/DVC/intersection
-              tar -cvf intersection.tar intersection
-              rm -rf intersection
+              #cp /home/model-server/npy/acc_im_em.npy /home/ubuntu/projects_jonathan/sem-pcyc/DVC/acc_im_em.npy
+              #cp /home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth  /home/ubuntu/projects_jonathan/sem-pcyc/DVC/model_best.pth
+              #cp /home/model-server/sem_pcyc/aux/Semantic/intersection/new_plus_words.npy /home/ubuntu/projects_jonathan/sem-pcyc/DVC/new_plus_words.npy
+              #cp /home/ubuntu/projects_jonathan/model-store/sem_pcyc$myVersion.mar /home/ubuntu/projects_jonathan/sem-pcyc/DVC/sem_pcyc$myVersion.mar
+              #cp -r /home/model-server/sem_pcyc/dataset/intersection /home/ubuntu/projects_jonathan/sem-pcyc/DVC/intersection
+              #tar -cvf intersection.tar intersection
+              #rm -rf intersection
               
               # 사용된 codes들도 DVC/codes 폴더로 복사
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_paul/last_test/dvctest/DVC/codes/utils.py
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_paul/last_test/dvctest/DVC/codes/train.py
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_paul/last_test/dvctest/DVC/codes/mk_image_emd_npy.py
-              cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_paul/last_test/dvctest/DVC/codes/newclass_word2vec.py
-              cp /home/ubuntu/projects_jonathan/src/models.py /home/ubuntu/projects_paul/last_test/dvctest/DVC/codes/models.py
-              cp /home/ubuntu/projects_jonathan/sem-pcyc/ts/torch_handler/sem_pcyc_handler.py /home/ubuntu/projects_paul/last_test/dvctest/DVC/codes/sem_pcyc_handler.py
-              tar -cvf codes.tar codes
+              #cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/utils.py
+              #cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/train.py
+              #cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/mk_image_emd_npy.py
+              #cp /home/ubuntu/projects_jonathan/src/utils.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/newclass_word2vec.py
+              #cp /home/ubuntu/projects_jonathan/src/models.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/models.py
+              #cp /home/ubuntu/projects_jonathan/sem-pcyc/ts/torch_handler/sem_pcyc_handler.py /home/ubuntu/projects_jonathan/sem-pcyc/DVC/codes/sem_pcyc_handler.py
+              #tar -cvf codes.tar codes
               
-              dvc add acc_im_em.npy sem_pcyc$myVersion.mar codes.tar intersection.tar model_best.pth new_plus_words.npy
+              #dvc add acc_im_em.npy sem_pcyc$myVersion.mar codes.tar intersection.tar model_best.pth new_plus_words.npy
               
-              git add model_best.pth.dvc sem_pcyc$myVersion.mar acc_im_em.npy.dvc codes.tar.dvc intersection.tar.dvc new_plus_words.npy.dvc
-              git commit -m "DVC, plus intersection dataset, version is $myVersion"
-              git tag -a "v$myVersion" -m "DVC, plus intersection dataset, version is $myVersion"
+              #git add model_best.pth.dvc sem_pcyc$myVersion.mar acc_im_em.npy.dvc codes.tar.dvc intersection.tar.dvc new_plus_words.npy.dvc
+              #git commit -m "DVC, plus intersection dataset, version is $myVersion"
+              #git tag -a "v$myVersion" -m "DVC, plus intersection dataset, version is $myVersion"
+              
+              cp /home/ubuntu/guitar.png /home/ubuntu/projects_jonathan/sem-pcyc/DVC/guitar.png
+              dvc add guitar.png
+              
+              git add guitar.png.dvc
+              git commit -m "github action push test and version test $myVersion"
+              git tag -a "v$myVersion" -m "github action push test and version test $myVersion"
               
               dvc push
               echo dvc push done
