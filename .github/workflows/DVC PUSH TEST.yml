@@ -8,9 +8,9 @@ jobs:
         - uses: actions/checkout@v2
         - uses: iterative/setup-dvc@v1
         - name: dvc pull dataset
-       #- env:
-             # AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-             # AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          env:
+               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           run: |
              source activate pytorch_p36
              conda activate DVC
@@ -43,22 +43,26 @@ jobs:
               myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
               echo "다음에 등록할 버전은 $myVersion 버전입니다."
               echo "################################################################"
+              
               # 추가된 class에 대한 word2vec 진행
               cd /home/ubuntu/projects_jonathan/src
               echo Create new_plus_words.npy!!!!!!!!!!!!!!
               python newclass_word2vec.py
               echo Create new_plus_words.npy done!!!!!!!!!!!!!!    
               echo "################################################################"
+              
               # SEM-PCYC 학습 시작
               echo SEM-PCYC model train start!!!!!!!!!!!!!
               #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
               echo SEM-PCYC model train done!!!!!!!!!!!!!!
               echo "################################################################"
+              
               # Image embedding 생성
               echo Create acc_im_em.npy!!!!!!!!!!!!!!
               python mk_image_emd_npy.py
               echo Create acc_im_em.npy done!!!!!!!!!!!!!!
               echo "################################################################"
+              
               # 새로운 버전의 sem_pcyc.mar 생성
               echo Create sem_pcyc.mar!!!!!!!!!!!!!!
               cd ..
