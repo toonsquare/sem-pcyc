@@ -1,4 +1,4 @@
-name: CML & DVC TEST
+name: SEM-PCYC CML & DVC
 on: workflow_dispatch
 jobs:
   jobs1:
@@ -7,24 +7,23 @@ jobs:
     steps:
         - uses: actions/checkout@v2
         - uses: iterative/setup-dvc@v1
+        - name: dvc pull dataset
           env:
-             AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
-             AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+               AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
+               AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           run: |
-            source activate pytorch_p36
-            conda activate DVC
-            echo dvc get start!!
-#            cd /home/ubuntu
-#            dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar    # test끝나고 intersection으로 바꾸기!!!
-#            sudo mv intersection.tar /home/model-server/sem_pcyc/dataset
-#            cd /home/model-server/sem_pcyc/dataset
-#            sudo tar -xvf intersection.tar
-#            sudo rm intersection.tar
-#            ls -al
-#            echo Done!!
-            
-            
-            
+             source activate pytorch_p36
+             conda activate DVC
+             echo dvc get start!!
+             cd /home/ubuntu
+             dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar    # test끝나고 intersection으로 바꾸기!!!
+             sudo mv intersection.tar /home/model-server/sem_pcyc/dataset
+             cd /home/model-server/sem_pcyc/dataset
+             sudo tar -xvf intersection.tar
+             sudo rm intersection.tar
+             ls -al
+             echo Done!!
+
   jobs2:
       name: Create files and trian a model
       needs: jobs1
@@ -44,26 +43,26 @@ jobs:
               myVersion=$(cat model_version | grep modelVersion | grep -o [0-9\.]* | awk '{printf "%.1f", $1 + 1}')
               echo "다음에 등록할 버전은 $myVersion 버전입니다."
               echo "################################################################"
-
+              
               # 추가된 class에 대한 word2vec 진행
               cd /home/ubuntu/projects_jonathan/src
               echo Create new_plus_words.npy!!!!!!!!!!!!!!
               python newclass_word2vec.py
               echo Create new_plus_words.npy done!!!!!!!!!!!!!!    
               echo "################################################################"
-
+              
               # SEM-PCYC 학습 시작
               echo SEM-PCYC model train start!!!!!!!!!!!!!
               #python train.py --dataset intersection --dim-out 64 --semantic-models new_plus_words --epochs 1000 --early-stop 300 --lr 0.0001 --batch-size 32
               echo SEM-PCYC model train done!!!!!!!!!!!!!!
               echo "################################################################"
-
+              
               # Image embedding 생성
               echo Create acc_im_em.npy!!!!!!!!!!!!!!
               python mk_image_emd_npy.py
               echo Create acc_im_em.npy done!!!!!!!!!!!!!!
               echo "################################################################"
-
+              
               # 새로운 버전의 sem_pcyc.mar 생성
               echo Create sem_pcyc.mar!!!!!!!!!!!!!!
               cd ..
@@ -71,9 +70,9 @@ jobs:
               echo Create sem_pcyc.mar done!!!!!!!!!!!!!!
               mv -v ./sem_pcyc$myVersion.mar ./model-store
               echo Move sem_pcyc$myVersion.mar to model store!!!!!!!!!!!!!!
-
+              
+              # DVC 적용
               cd ~
-              source activate pytorch_p36
               conda activate DVC
               cd /home/ubuntu/projects_jonathan/sem-pcyc/DVC/
               # 필요한 파일 DVC 폴더로 복사
@@ -96,14 +95,16 @@ jobs:
               
               dvc add acc_im_em.npy sem_pcyc$myVersion.mar codes.tar intersection.tar model_best.pth new_plus_words.npy
               
-              git add model_best.pth.dvc sem_pcyc$myVersion.mar acc_im_em.npy.dvc codes.tar.dvc intersection.tar.dvc new_plus_words.npy.dvc
+              git add model_best.pth.dvc sem_pcyc$myVersion.mar.dvc acc_im_em.npy.dvc codes.tar.dvc intersection.tar.dvc new_plus_words.npy.dvc
               git commit -m "DVC, plus intersection dataset, version is $myVersion"
               git tag -a "v$myVersion" -m "DVC, plus intersection dataset, version is $myVersion"
               
               dvc push
-              git push
+              echo "dvc push done!!!!!!!!!!!!!!!"
               
-              echo "DVC Done!!!!!!!!!"
+              git push
+              git push --tags
+              echo "git push done!!!!!!!!!!!!!!!"
                     
     
 #   jobs3:
