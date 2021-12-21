@@ -130,14 +130,15 @@ dvc 설치
 NIPA의 경우 conda로 dvc 가상환경을 만들었음  
 `source activate pytorch_p36` 입력 후 `conda activate DVC` 입력
 
+## dvc로 파일 push하기
 version 관리를 하고 싶은 파일이 bigdata.txt라 가정
 1. `git init`
 2. `dvc init`
 3. `dvc add bigdata.txt`  
-bigdata.txt.dvc 파일 생성, .gitignore에 dvc add된 파일이 자동 등록됨   
+bigdata.txt.dvc 파일 생성, .gitignore에 bigdata.txt 파일이 자동 등록됨   
 4. `git add bigdata.txt.dvc .gitignore`   
-.dvc파일과 .gitignore git add  
-5. `dvc remote add -d storage이름설정 s3://bucket/path`   
+.dvc파일과 .gitignore git add 하기  
+5. `dvc remote add -d 저장소_이름설정 s3://bucket/path`   
 real file을 저장할 remote storage 등록(s3라 가정, 경로에는 bucket의 uri입력)  
 6. `git add .dvc/config`  
 remote storage를 등록하면 .dvc/config 파일에 정보가 입력되며, 이것도 git add 해주기  
@@ -153,7 +154,30 @@ tag도 push
 지정된 remote storage에 real file push  
     (s3를 remote storage로 지정한 경우, `pip install boto3` & `pip install s3fs`를 해주어야 한다.)
 
-### DVC pull & push할 때 주의사항
+## dvc로 파일 pull하기
+현재 remote storage가 s3이므로 dvc remote modify로 aws access key와 id를 적어주어야 s3에 접근이 가능하다.  
+따라서 file을 가져오기 위해서는 클론을 먼저 한 후 key & id를 등록을 해주고 file을 가져와야 한다.  
+**<u>(github action이라면 환경변수 등록해주었기 때문에 어떤 경로에서든지 file을 가져올 수 있다.)</u>**
+
+### data registry(git repository)에서 file가져오기(_dvc get & dvc import_)
+intersection.tar 파일 가져오기      
+`dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar`  
+`dvc get` 명령어만 동작이 안되고 있으며, github action에서만 동작이 된다.   
+오류는 `ERROR: unexpected error - Unable to locate credentials ` 이며, aws access key와 id를 등록하지 않고 dvc pull이나 push를 할 때 발생한다.  
+그러나 key와 id를 등록을 했음에도 발생하고 있다.    
+
+파일이나 폴더 가져오기 (DVC.dvc와 DVC폴더 생성)  
+`dvc import https://github.com/toonsquare/sem-pcyc.git DVC`
+
+### git clone 해서 file가져오기(_dvc pull_)
+1. `git clone https://github.com/toonsquare/sem-pcyc.git`
+2. `git tag`  
+클론한 repository에 tag의 목록을 보여줌
+3. `git checkout 버전`
+4. `dvc pull`  
+해당 버전에서 push 했던 file들을 가져옴
+
+## DVC pull & push할 때 주의사항
 dvc push나 pull을 할 때, 지정된 remote storage에 맞는 credential 정보를 입력해주어야 한다.  
 ex) s3 bucket - access_key_id & secret_access_key를 local에 등록을 해준다.  
 (민감한 정보는 --local로 config.local에 등록해줄 수 있다.)  
@@ -171,26 +195,6 @@ steps:
           AWS_ACCESS_KEY_ID: ${{ secrets.AWS_ACCESS_KEY_ID }}
           AWS_SECRET_ACCESS_KEY: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
 ```
-
-## dvc로 파일 pull하기
-### data registry(git repository)에서 file가져오기(_dvc get & dvc import_)
-intersection.tar 파일 가져오기    -- get만 지금 에러발생(일단 적고 후에 해결 방법 찾기)  
-`dvc get https://github.com/toonsquare/sem-pcyc.git DVC/intersection.tar`  
-DVC 폴더 전부 가져오기 (DVC.dvc와 DVC폴더 생성)  
-`dvc import https://github.com/toonsquare/sem-pcyc.git DVC`
-
-### git clone 해서 file가져오기
-1. `git clone https://github.com/toonsquare/sem-pcyc.git`
-2. `git tag`  
-클론한 repository에 tag의 목록을 보여줌
-3. `git checkout 체크아웃할 버전`
-4. `dvc pull`  
-해당 버전에서 push 했던 file들을 가져옴
-
-## dvc로 파일 push하기
-remote storage가 지정되어있다고 가정
-1. `dvc add intersection.tar`
-2. `dvc push intersection.tar.dvc`  
 
 
 
