@@ -13,7 +13,7 @@ PyTorch implementation of our SEM-PCYC model for zero-shot sketch-based image re
 |성공 |성공 |18.04 | 1080 Ti   |470.57.02|11.4   |4.7.12|3.6.13|1.4.0  py3.6_cuda9.2.148_cuddn7.6.3_0|0.5.0| 
 |성공 |성공 |18.04 | 2070 SUPER|470.57.02|11.4   |4.7.12|3.6.13|1.4.0 py3.6_cuda9.2.148_cuddn7.6.3_0|0.5.0|
 |성공 |성공 |20.04 | 1660 SUPER|470.57.02|11.4   |4.7.12|3.6.10|1.7.1 py3.6_cuda9.2.148_cuddn7.6.3_0|0.8.2|
-
+|성공 |성공 |18.04 | A100 (NIPA 서버)|470.103.01|11.4   |4.10.3|3.7.10|1.7.1+cu110|0.8.2+cu110|
 
 ## Prerequisites
 
@@ -61,6 +61,17 @@ torchvision               0.2.2.post3              pypi_0    pypi
 - scikit-learn
 - google ( 데이터를 온라인 다운로드 받을 경우 사용, 로컬에 저장해서 사용할때는 필요 없음 )
 - tqdm
+
+```bash
+train을 위한 최소한의 라이브러리 설치
+conda create -n sbir_pytorch_p37 python=3.7.10
+conda install pytorch==1.7.1 torchvision==0.8.2 torchaudio==0.7.2 cudatoolkit=11.0 -c pytorch
+conda install -c anaconda joblib=0.12.1
+conda install -c anaconda scikit-learn
+conda install numpy=1.14.0
+conda install -c conda-forge tensorboardx
+```
+
 
 ```bash
 pip install --upgrade google-api-python-client

@@ -388,4 +388,5 @@ def train(train_loader, sem_pcyc_model, epoch, args):
 
 
 if __name__ == '__main__':
+    torch.autograd.set_detect_anomaly(True)
     main()
