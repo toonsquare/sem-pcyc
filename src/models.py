@@ -75,7 +75,7 @@ class Generator(nn.Module):
         modules.append(nn.Linear(in_dim, hid_dim))
         if use_batchnorm:
             modules.append(nn.BatchNorm1d(hid_dim))
-        modules.append(nn.LeakyReLU(0.2, inplace=False))
+        modules.append(nn.LeakyReLU(0.2, inplace=True))
         if noise:
             modules.append(GaussianNoiseLayer(mean=0.0, std=0.2))
         if use_dropout:
@@ -83,7 +83,7 @@ class Generator(nn.Module):
         modules.append(nn.Linear(hid_dim, hid_dim))
         if use_batchnorm:
             modules.append(nn.BatchNorm1d(hid_dim))
-        modules.append(nn.LeakyReLU(0.2, inplace=False))
+        modules.append(nn.LeakyReLU(0.2, inplace=True))
         if noise:
             modules.append(GaussianNoiseLayer(mean=0.0, std=0.2))
         if use_dropout:
@@ -122,13 +122,13 @@ class Discriminator(nn.Module):
         modules.append(nn.Linear(in_dim, hid_dim))
         if use_batchnorm:
             modules.append(nn.BatchNorm1d(hid_dim))
-        modules.append(nn.LeakyReLU(0.2, inplace=False))
+        modules.append(nn.LeakyReLU(0.2, inplace=True))
         if use_dropout:
             modules.append(nn.Dropout(p=0.5))
         modules.append(nn.Linear(hid_dim, hid_dim))
         if use_batchnorm:
             modules.append(nn.BatchNorm1d(hid_dim))
-        modules.append(nn.LeakyReLU(0.2, inplace=False))
+        modules.append(nn.LeakyReLU(0.2, inplace=True))
         if use_dropout:
             modules.append(nn.Dropout(p=0.5))
         modules.append(nn.Linear(hid_dim, out_dim))
@@ -148,14 +148,14 @@ class AutoEncoder(nn.Module):
         modules = []
         for i in range(nlayer):
             modules.append(nn.Linear(steps_down[i], steps_down[i + 1]),)
-            modules.append(nn.ReLU(inplace=False))
+            modules.append(nn.ReLU(inplace=True))
         self.enc = nn.Sequential(*modules)
 
         steps_up = np.linspace(hid_dim, dim, num=nlayer + 1, dtype=np.int).tolist()
         modules = []
         for i in range(nlayer):
             modules.append(nn.Linear(steps_up[i], steps_up[i + 1]))
-            modules.append(nn.ReLU(inplace=False))
+            modules.append(nn.ReLU(inplace=True))
         self.dec = nn.Sequential(*modules)
 
     def forward(self, x):
@@ -304,6 +304,10 @@ class SEM_PCYC(nn.Module):
 
     def backward(self, se, cl):
 
+        self.optimizer_ae.zero_grad()
+        self.optimizer_gen.zero_grad()
+        self.optimizer_disc.zero_grad()
+
         # Semantic reconstruction
         regularizer = 0
         if self.lambda_regular > 0:
@@ -311,7 +315,7 @@ class SEM_PCYC(nn.Module):
                 if self.aut_enc.enc[l]._get_name() == 'Linear':
                     regularizer = regularizer + torch.norm(self.aut_enc.enc[l].weight, 2, dim=0).sum()
         loss_aut_enc = self.criterion_reg(self.se_em_rec, se) + self.lambda_regular * regularizer / cl.shape[0]
-        self.optimizer_ae.zero_grad()
+
         loss_aut_enc.backward(retain_graph=True)
 
         # Adversarial loss with flipped labels (false -> true)
@@ -345,11 +349,8 @@ class SEM_PCYC(nn.Module):
         # Sum the above generator losses for back propagation and displaying
         loss_gen = loss_gen_adv + loss_gen_cyc + loss_gen_cls + loss_gen_reg
 
-        self.optimizer_gen.zero_grad()
         loss_gen.backward(retain_graph=True)
-
         # initialize optimizer
-        self.optimizer_disc.zero_grad()
 
         # Semantic discriminator loss
         loss_disc_se = 2 * self.criterion_gan(self.disc_se(self.se_em_enc), True) + \
