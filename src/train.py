@@ -327,6 +327,9 @@ def main():
 
 
 def train(train_loader, sem_pcyc_model, epoch, args):
+    """
+    sem_pcyc 학습시키기
+    """
 
     # Switch to train mode
     sem_pcyc_model.train()

@@ -24,9 +24,16 @@ class DataGeneratorPaired(data.Dataset):
         self.transforms_image = transforms_image
 
     def __getitem__(self, item):
+        # 스케치 데이터가 RGBA 일 경우 Alpha값을 빼고 RGB로 invert
         image = Image.open(os.path.join(self.root, self.sketch_dir, self.sketch_sd, self.fls_sk[item]))
-        sk = ImageOps.invert(image.convert('RGB')).\
-            convert(mode='RGB')
+
+        if image.mode == 'RGBA':
+            r, g, b, a = image.split()
+            rgb_image = Image.merge('RGB', (r, g, b))
+            sk = ImageOps.invert(rgb_image)
+        else:
+            sk = ImageOps.invert(image.convert('RGB')). \
+                convert(mode='RGB')
         im = Image.open(os.path.join(self.root, self.photo_dir, self.photo_sd, self.fls_im[item])).convert(mode='RGB')
         cls = self.clss[item]
         if self.transforms_image is not None:
@@ -58,8 +65,20 @@ class DataGeneratorSketch(data.Dataset):
         self.transforms = transforms
 
     def __getitem__(self, item):
-        sk = ImageOps.invert(Image.open(os.path.join(self.root, self.sketch_dir, self.sketch_sd, self.fls_sk[item]))).\
-            convert(mode='RGB')
+        # sk = ImageOps.invert(Image.open(os.path.join(self.root, self.sketch_dir, self.sketch_sd, self.fls_sk[item]))).\
+        #     convert(mode='RGB')
+
+        # 스케치 데이터가 RGBA 일 경우 Alpha값을 빼고 RGB로 invert
+        image = Image.open(os.path.join(self.root, self.sketch_dir, self.sketch_sd, self.fls_sk[item]))
+
+        if image.mode == 'RGBA':
+            r, g, b, a = image.split()
+            rgb_image = Image.merge('RGB', (r, g, b))
+            sk = ImageOps.invert(rgb_image)
+        else:
+            sk = ImageOps.invert(image.convert('RGB')). \
+                convert(mode='RGB')
+
         cls_sk = self.clss_sk[item]
         if self.transforms is not None:
             sk = self.transforms(sk)

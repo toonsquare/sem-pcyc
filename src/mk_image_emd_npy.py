@@ -9,11 +9,16 @@ import torch
 from torch.utils.data import DataLoader
 
 class MakeNPY():
+    """
+    새롭게 추가된 이미지의 embedding값을 추출하는 역할을 한다.
+    이를 통해 만들어진 acc_im_em.npy 파일은 .mar을 생성할 때, extra_files 옵션으로 들어간다.
+    input으로 들어오는 한 장의 sketch embedding 값과 이미지들의 embedding 값의 거리값을 비교할 때 사용된다.
+    """
     def __init__(self):
-        # self.path_dataset = '/home/ubuntu/sem_pcyc/dataset'
-        # self.path_aux = '/home/ubuntu/sem_pcyc/aux'
-        self.path_dataset = '/home/model-server/sem_pcyc/dataset'
-        self.path_aux = '/home/model-server/sem_pcyc/aux'
+        self.path_dataset = '/home/ubuntu/sem_pcyc/data/sem_pcyc/dataset'
+        self.path_aux = '/home/ubuntu/sem_pcyc/data/sem_pcyc/aux'
+        # self.path_dataset = '/home/model-server/sem_pcyc/dataset'
+        # self.path_aux = '/home/model-server/sem_pcyc/aux'
         self.dataset = 'intersection'
         self.root_path  = os.path.join(self.path_dataset, self.dataset)
         self.photo_dir = 'images'
@@ -201,9 +206,10 @@ class MakeNPY():
 
 
         sem_pcyc_model = SEM_PCYC(params_model)
-        path_pth ="/home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth"
+        # path_pth ="/home/model-server/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth"
+        path_pth = "/home/ubuntu/sem_pcyc/data/sem_pcyc/aux/CheckPoints/intersection/new_plus_words/64/model_best.pth"
         device = torch.device("cuda")
-        checkpoint = torch.load(path_pth,map_location="cuda:0")
+        checkpoint = torch.load(path_pth, map_location="cuda:0")
         sem_pcyc_model.load_state_dict(checkpoint['state_dict'])
         sem_pcyc_model.to(device)
         sem_pcyc_model.eval()
@@ -216,7 +222,8 @@ def main() :
     print('size acc_im_em : {}'.format(len(acc_im_em)))
     print("\n")
     print("--------------START Saving--------------")
-    np.save("/home/model-server/npy/acc_im_em.npy", acc_im_em)
+    # np.save("/home/model-server/npy/acc_im_em.npy", acc_im_em)
+    np.save("/home/ubuntu/sem_pcyc/data/sem_pcyc/npy", acc_im_em)
     print("--------------END Saving--------------")
 
 if __name__ == "__main__":
