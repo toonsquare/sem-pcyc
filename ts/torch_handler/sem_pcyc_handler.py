@@ -40,7 +40,7 @@ class ModelHandler(BaseHandler):
         self.transform_sketch = None
         self.dataset = None
         self.num_workers = 4
-        self.batch_size = 32
+        self.batch_size = 512
         self.test_loader_image = None
         self.root_path = None
         self.photo_dir = None
@@ -207,10 +207,11 @@ class ModelHandler(BaseHandler):
         path_image_model = os.path.join(path_aux, 'CheckPoints', dataset, 'image')
         print('path_image_model : ' + path_image_model)
 
+        # model(.pth) 경로
         path_cp = os.path.join(path_aux, 'CheckPoints', dataset, str_aux, model_name, str(dim_out))
         print('path_cp : ' + path_cp)
 
-        # 시멘틱 모델 벡터 값 가져오기
+        # 시멘틱 모델 벡터 값 가져오기 (newclass_word2vec.py에서 생성한 new_plus_words.npy 파일)
         for f in semantic_models:
             fi = os.path.join(path_aux, 'Semantic', dataset, f + '.npy')
             print('fi : ' + fi)
@@ -314,8 +315,16 @@ class ModelHandler(BaseHandler):
             preprocessed_data = data[0].get("body")
             if preprocessed_data is None:
                 preprocessed_data = data[0].get("file")
+            # preprocessed_data는 PIL을 통해서 읽어드린 스케치 이미지임
             preprocessed_data = Image.open(BytesIO(preprocessed_data))
-            preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
+
+            # input으로 들어오는 스케치가 RGBA일 경우에 Alpha값을 빼고 RGB로 invert하기
+            if preprocessed_data.mode == 'RGBA':
+                r, g, b, a = preprocessed_data.split()
+                rgb_image = Image.merge('RGB', (r, g, b))
+                preprocessed_data = ImageOps.invert(rgb_image)
+            else:
+                preprocessed_data = ImageOps.invert(preprocessed_data).convert(mode='RGB')
             # preprocessed_data.save(os.path.join(self.npy_path, 'test_invert.png'))
             transform_image = self.transform_sketch(preprocessed_data)
             # preprocessed_data.save(os.path.join(self.npy_path, 'test.png'))
@@ -471,13 +480,14 @@ class ModelHandler(BaseHandler):
         print('path_sk : {}'.format(path_sk))
 
         # image files and classes
-        if dataset == '':
-            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
-        else:
-            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        # if dataset == '':
+        #     fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        # else:
+        #     fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
         print('fls_im.size : {}'.format(len(fls_im)))
-
         fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
+        print('2 fls_im.size : {}'.format(len(fls_im)))
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
 
         # sketch files and classes
@@ -489,6 +499,8 @@ class ModelHandler(BaseHandler):
 
         # all the unique classes
         classes = np.unique(clss_im)
+        print("mar 생성 이미지 클래스", classes)
+        print("mar 생성 이미지 클래스의 개수", len(classes))
 
         # divide the classes, done according to the "Zero-Shot Sketch-Image Hashing" paper
         np.random.seed(0)

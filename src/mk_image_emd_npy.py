@@ -20,14 +20,14 @@ class MakeNPY():
         # self.path_dataset = '/home/model-server/sem_pcyc/dataset'
         # self.path_aux = '/home/model-server/sem_pcyc/aux'
         self.dataset = 'intersection'
-        self.root_path  = os.path.join(self.path_dataset, self.dataset)
+        self.root_path = os.path.join(self.path_dataset, self.dataset)
         self.photo_dir = 'images'
         self.sketch_dir = 'sketches'
         self.photo_sd = ''
         self.sketch_sd = ''
         self.splits = self._load_files_tuberlin_zeroshot(root_path=self.root_path, split_eccv_2018=False,
                                                        photo_dir=self.photo_dir, sketch_dir=self.sketch_dir, photo_sd=self.photo_sd,
-                                                       sketch_sd=self.sketch_sd,dataset=self.dataset)
+                                                       sketch_sd=self.sketch_sd, dataset=self.dataset)
         self.sem_pcyc_model = self.SEM_PCYC()
     def _get_coarse_grained_samples(self,classes, fls_im, fls_sk, set_type='train', filter_sketch=True):
         idx_im_ret = np.array([], dtype=np.int)
@@ -63,21 +63,26 @@ class MakeNPY():
         path_sk = os.path.join(root_path, sketch_dir, sketch_sd)
 
         # image files and classes
-        if dataset == '':
-            fls_im = glob.glob(os.path.join(path_im, '*', '*'))
-        else:
-            fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
+        # if dataset == '':
+        #     fls_im = glob.glob(os.path.join(path_im, '*', '*'))
+        # else:
+        #     fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
 
+        fls_im = glob.glob(os.path.join(path_im, '*', '*.base64'))
         fls_im = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_im])
         clss_im = np.array([f.split('/')[-2] for f in fls_im])
+        print("이미지 파일의 개수", len(clss_im))
 
         # sketch files and classes
+        # sketch file 형식은 모두 png임
         fls_sk = glob.glob(os.path.join(path_sk, '*', '*.png'))
         fls_sk = np.array([os.path.join(f.split('/')[-2], f.split('/')[-1]) for f in fls_sk])
         clss_sk = np.array([f.split('/')[-2] for f in fls_sk])
 
         # all the unique classes
         classes = np.unique(clss_im)
+        print("이미지 클래스", classes)
+        print("이미지 클래스의 개수", len(classes))
 
         # divide the classes, done according to the "Zero-Shot Sketch-Image Hashing" paper
         np.random.seed(0)
@@ -127,7 +132,7 @@ class MakeNPY():
                                              all_class_image, transforms=transform)
 
         # tensor화된 이미지들을 load하는 단계
-        test_loader_image = DataLoader(dataset=data_test_image, batch_size=32, shuffle=False, num_workers=4,
+        test_loader_image = DataLoader(dataset=data_test_image, batch_size=512, shuffle=False, num_workers=4,
                                        pin_memory=True)
 
         # 데이터를 enumerate()를 통해 im(이미지)와 cls_im 변수에 각각 vertor와 클래스명들을 담아준다.
@@ -211,7 +216,9 @@ class MakeNPY():
         device = torch.device("cuda")
         checkpoint = torch.load(path_pth, map_location="cuda:0")
         sem_pcyc_model.load_state_dict(checkpoint['state_dict'])
+        print('sem-pcyc model load!!')
         sem_pcyc_model.to(device)
+        print('cuda done!!')
         sem_pcyc_model.eval()
         return sem_pcyc_model
 
@@ -223,7 +230,7 @@ def main() :
     print("\n")
     print("--------------START Saving--------------")
     # np.save("/home/model-server/npy/acc_im_em.npy", acc_im_em)
-    np.save("/home/ubuntu/sem_pcyc/data/sem_pcyc/npy", acc_im_em)
+    np.save("/home/ubuntu/sem_pcyc/data/sem_pcyc/npy/acc_im_em.npy", acc_im_em)
     print("--------------END Saving--------------")
 
 if __name__ == "__main__":
