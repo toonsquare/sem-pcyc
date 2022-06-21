@@ -40,7 +40,7 @@ class ModelHandler(BaseHandler):
         self.transform_sketch = None
         self.dataset = None
         self.num_workers = 4
-        self.batch_size = 512
+        self.batch_size = 8
         self.test_loader_image = None
         self.root_path = None
         self.photo_dir = None
@@ -52,8 +52,8 @@ class ModelHandler(BaseHandler):
         self.acc_im_em_npy_saved = None
         self.max_prediction_size = 30
         # 모델 등록용
-        # self.npy_path = '/home/model-server/npy'
-        self.npy_path = '/home/ubuntu/sem_pcyc/data/sem_pcyc/npy'
+        self.npy_path = '/home/model-server/npy'
+        # self.npy_path = '/home/ubuntu/sem_pcyc/data/sem_pcyc/npy'
         npy_full_path = os.path.join(self.npy_path, "acc_im_em.npy")
         if os.path.isfile(npy_full_path):
             self.acc_im_em = self.np_load(npy_full_path)
@@ -173,10 +173,10 @@ class ModelHandler(BaseHandler):
         sem_dim = 0
 
         # 모델 등록용
-        # path_dataset = '/home/model-server/sem_pcyc/dataset'
-        # path_aux = '/home/model-server/sem_pcyc/aux'
-        path_dataset = '/home/ubuntu/sem_pcyc/data/sem_pcyc/dataset'
-        path_aux = '/home/ubuntu/sem_pcyc/data/sem_pcyc/aux'
+        path_dataset = '/home/model-server/sem_pcyc/dataset'
+        path_aux = '/home/model-server/sem_pcyc/aux'
+        # path_dataset = '/home/ubuntu/sem_pcyc/data/sem_pcyc/dataset'
+        # path_aux = '/home/ubuntu/sem_pcyc/data/sem_pcyc/aux'
         self.dataset = dataset = 'intersection'
         semantic_models = ['new_plus_words']
         files_semantic_labels = []
@@ -499,8 +499,8 @@ class ModelHandler(BaseHandler):
 
         # all the unique classes
         classes = np.unique(clss_im)
-        print("mar 생성 이미지 클래스", classes)
-        print("mar 생성 이미지 클래스의 개수", len(classes))
+        print("classes", classes)
+        print("number of classes", len(classes))
 
         # divide the classes, done according to the "Zero-Shot Sketch-Image Hashing" paper
         np.random.seed(0)
