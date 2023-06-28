@@ -41,28 +41,28 @@ sudo apt-get install -y rename
 conda install _pytorch_select 
 ```
 
-**2023. 06. 28. 유의사항**   
+**2023. 06. 28. 이슈 히스토리**   
 **이슈**   
 1. ec2 instace를 껏다가 킴
 2. sbir 추론이 안됨 - ~no worker 에러 메시지 생성
 
    
 **수정**    
-1. ec2 instance 진입
-ssh ec2-user@인스턴스IP -i ./ml-key-toonsquare.pem
-2. sbir 모델 확인
-curl http://localhost:8081/models/sem_pcyc
-3. default 모델이 3.0으로 나옴
-4. 하지만 인스턴스 내부에 있는 dataset, checkpoint, npy 등 필요한 파일은 4.0 mar 버전임
-5. mar 4.0으로 모델 등록 시도
-curl -X POST "http://localhost:8081/models?model_name=sem_pcyc&url=/home/ec2-user/sem-pcyc/model-store/sem_pcyc4.0.mar"
-6. 이미 register되었다는 콘솔 출력
-7. 디폴트 모델로 4.0을 지정
-curl -v -X PUT http://localhost:8081/models/sem_pcyc/4.0/set-default
-8. 이전 버전 삭제
-curl -X DELETE http://localhost:8081/models/sem_pcyc/3.0
-9. 테스트 이미지 추론
-curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavilion03.jpg
+1. ec2 instance 진입   
+`ssh ec2-user@인스턴스IP -i ./ml-key-toonsquare.pem`
+2. sbir 모델 확인   
+`curl http://localhost:8081/models/sem_pcyc`   
+3. default 모델이 3.0으로 나옴   
+4. 하지만 인스턴스 내부에 있는 dataset, checkpoint, npy 등 필요한 파일은 4.0 mar 버전임   
+5. mar 4.0으로 모델 등록 시도   
+`curl -X POST "http://localhost:8081/models?model_name=sem_pcyc&url=/home/ec2-user/sem-pcyc/model-store/sem_pcyc4.0.mar"`  
+6. 이미 register되었다는 콘솔 출력   
+7. 디폴트 모델로 4.0을 지정   
+`curl -v -X PUT http://localhost:8081/models/sem_pcyc/4.0/set-default`   
+8. 이전 버전 삭제   
+`curl -X DELETE http://localhost:8081/models/sem_pcyc/3.0`  
+9. 테스트 이미지 추론   
+`curl http://0.0.0.0:8080/predictions/sem_pcyc -T pavilion03.jpg`   
 
 
 ## 가상환경 생성
