@@ -40,11 +40,14 @@ sudo apt-get install -y rename
 ```bash
 conda install _pytorch_select 
 ```
-* 2023. 06. 28. 유의사항
-**이슈**
+
+**2023. 06. 28. 유의사항**   
+**이슈**   
 1. ec2 instace를 껏다가 킴
 2. sbir 추론이 안됨 - ~no worker 에러 메시지 생성
-**수정** 
+
+   
+**수정**    
 1. ec2 instance 진입
 ssh ec2-user@인스턴스IP -i ./ml-key-toonsquare.pem
 2. sbir 모델 확인
